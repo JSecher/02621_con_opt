@@ -1,3 +1,6 @@
+# Ignore Pycharm stuff
+.idea/
+
 # Ignore casadi folder
 *casadi*/
 
