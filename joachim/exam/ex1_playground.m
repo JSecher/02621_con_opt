@@ -84,3 +84,27 @@ disp("time1")
 disp(total_t1)
 disp("time2")
 disp(total_t2)
+
+
+%% 
+% Two axises 
+
+% Plot total time used for for each method.
+f = figure;
+a1 = axes;
+hold off
+for i=1:length(solvers)
+    plot(param_vals, times(i,:))
+    hold on
+end
+legend(solvers, 'Location','northwest')
+
+a2 = copyobj(a1,f);  % Create a new axis based on the existing axis
+set(a2,'Color','none')  % Make the new axis transparent
+set(a2,'Ytick',[])  % Remove the YTicks (since they are redundant)
+set(a2,'XAxisLocation','top') % Display the XTicks on the top side
+% set(a2,'XTickLabel', con_vals)
+% Label your plot appropriately
+ylabel(a1,"time [s]")
+xlabel(a1,"n, number of parameters")
+xlabel(a2,"m, number of constraints")

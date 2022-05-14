@@ -27,19 +27,19 @@ if ~ m == size(Rbar, 2)
 end
 
 % Solve for x and lagrange multipliers    
-Q1 = Q(:,1:m);      % Q Range
-Q2 = Q(:,m+1:n);    % Q Null
+Y = Q(:,1:m);      % Q Range
+Z = Q(:,m+1:n);    % Q Null
 R = Rbar(1:m,1:m);
 x_Y = R' \ b;       % Solve R' x_Y = b
 
-% Solve: (Q2' H Q2)x_Z = −Q′2(HQ1 x_Y + g) i.e. solve for x_Z
-Q2T = Q2';           % Precompute tranpose Q2 for use multiple times
-L = chol(Q2T*H*Q2);  % Chol factorize the reduced-Hessian matrix
+% Solve: (Z' H Z)x_Z = −Q′2(HQ1 x_Y + g) i.e. solve for x_Z
+ZT = Z';           % Precompute tranpose Z for use multiple times
+L = chol(ZT*H*Z);  % Chol factorize the reduced-Hessian matrix
 
-x_Z = L' \ (-Q2T * (H*(Q1*x_Y)+g));  % Solve for x_Z
+x_Z = L' \ (-ZT * (H*(Y*x_Y)+g));  % Solve for x_Z
 x_Z = L \ x_Z;                       
 
-x = Q1*x_Y+Q2*x_Z;              % Compute x = Q1 x_Y + Q2 x_Z
-lambda = R \ Q1'*(H*x + g);     % Solve: R lambda = Q1′(Hx + g)
+x = Y*x_Y+Z*x_Z;              % Compute x = Y x_Y + Z x_Z
+lambda = R \ Y'*(H*x + g);     % Solve: R lambda = Q1′(Hx + g)
 
 end
