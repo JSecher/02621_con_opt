@@ -47,15 +47,17 @@ times = zeros(Ntests,1);
 times_qp = zeros(Ntests,1);
 err = zeros(Ntests,1);
 
+
+id_warning = [];
+msg_warning = {};
 fprintf("Test 1 : Running for %d value(s)" + ...
         " of b(1), each test run %d time(s).\n\n", Ntests, Nsamples);
 
 poorMansProgressBar(Ntests);
 for i=1:Ntests
     poorMansProgressBar(0);  % Update progress for iteration
-    
     b(1) = bs(i);  % Set value of b
-
+    
     % Run Quadprog
     ttotal = 0;
     for sample=1:Nsamples
@@ -69,6 +71,8 @@ for i=1:Ntests
     iterations_qp(i) = output.iterations;
 
     % Run Own solver
+    warning('off','all')
+    lastwarn("","")
     ttotal = 0;
     for sample=1:Nsamples
         tstart = cputime;
@@ -79,11 +83,30 @@ for i=1:Ntests
     times(i) = ttotal/Nsamples;
     objs(i) = 0.5*x'*H*x + g'*x;
     iterations(i) = iter;
+    w = warning('query','last');
     
+    % now if a warning was raised, warnMsg and warnId will not be empty.
+    [warnMsg, warnId] = lastwarn();
+    % you can check the warning message or id, or just throw the warning as an error if desired
+    if(~isempty(warnId))
+        id_warning = [id_warning, i];
+        msg_warning = [msg_warning, warnMsg];
+    end
+    warning('on','all')
+
     err(i) = mean(sqrt((x - xqp).^2));
 
 end
 poorMansProgressBar(-1);
+
+% Print the warnings if any
+if ~isempty(id_warning)
+    fprintf("\n!!!! %d values raise a warning for own solver !!!!!\n", length(id_warning))
+    for i=1:length(id_warning)
+        fprintf("Iteration %d, b(1)=%.5f, Got a warning!\n", id_warning(i), bs(id_warning(i)))
+        fprintf("\t Message: %s\n", msg_warning{i})
+    end
+end
 
 
 %% Make Plots
