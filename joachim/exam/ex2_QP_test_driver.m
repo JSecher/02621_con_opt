@@ -118,7 +118,7 @@ grid on
 legend("Own Solver")
 xlabel("b(1)")
 ylabel("MSE compared to quadprog")
-savefigpdf(f, "ex2_error_comp_basic", 1);
+savefigpdf(f, "ex2_error_comp_basic", 2);
 
 f = figure('Name','b vals Relative Error solver, semilogy');
 f.Position(3:4) = [800, 400];
@@ -127,7 +127,7 @@ grid on
 legend("Own Solver")
 xlabel("b(1)")
 ylabel("MSE compared to quadprog")
-savefigpdf(f, "ex2_error_comp_basic_semilogy", 1);
+savefigpdf(f, "ex2_error_comp_basic_semilogy", 2);
 
 f = figure('Name','b vals Objective Error comparison');
 %f.Position(3:4) = [800, 400];
@@ -136,7 +136,7 @@ grid on
 legend("Own Solver")
 xlabel("b(1)")
 ylabel("Difference in obejctive vs quadprog")
-savefigpdf(f, "ex2_error_objective_comp_basic", 1);
+savefigpdf(f, "ex2_error_objective_comp_basic", 2);
 
 f = figure('Name','b vals Time Comparion');
 % f.Position(3:4) = [800, 400];
@@ -150,7 +150,7 @@ ylabel("time [s]")
 if Nsamples > 1
     title(sprintf("Mean over %d samples", Nsamples))
 end
-savefigpdf(f, "ex2_time_comp_basic", 1);
+savefigpdf(f, "ex2_time_comp_basic", 2);
 
 
 f = figure('Name','b vals Iterations Comparion');
@@ -162,7 +162,7 @@ plot(bs, iterations_qp, 'LineWidth',2)
 legend("Own Solver", "QuadProg")
 xlabel("b(1)")
 ylabel("Iterations")
-savefigpdf(f, "ex2_iter_comp_basic", 1);
+savefigpdf(f, "ex2_iter_comp_basic", 2);
 
 
 function [msg] = poorMansProgressBar(state)
