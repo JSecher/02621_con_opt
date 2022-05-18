@@ -6,7 +6,7 @@ close all
 % Options for linprog
 default_options = optimset('Display', 'off');
 
-run_test1 = false;
+run_test1 = true;
 run_test2 = true;
 run_test3 = true;
 
@@ -89,7 +89,7 @@ input.tableRowLabels = {'$\phi =$', ...
                         'x =', '', '', '', '', ...
                         'MSE =', ...
                         '', ...
-                        'Iterations =','Time ='};
+                        'TimeIterations =','Iterations ='};
 % Set the row format of the data values 
 % Set the row format of the data values 
 input.dataFormatMode = 'row';
@@ -148,6 +148,8 @@ input.tablePlacement = 'ht';
 latex = latexTable(input);
 savelatexTable(latex, input.tableLabel, 3);
 
+else
+    fprintf("Skipping Test1");
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -195,23 +197,23 @@ for j=1:Ntests
     z0 = ones(2*n_var,1);
 
     % Run Own 
-    tic;
+    tstart = cputime;
     [x,y,z,s,iter] = LPSolverInteriorPoint(g,A,b,l,u,x0,y0,z0,s0);
-    time = toc;
+    time = cputime-tstart;
     obj = g'*x;
 
     % Run Linprog IP 
     options = optimset(default_options, 'Algorithm', 'interior-point');
-    tic;
+    tstart = cputime;
     [x_ip, obj_ip, ~, outtmp] = linprog(g,[],[],A',b,l,u, options);
-    time_ip = toc;
+    time_ip = cputime-tstart;
     iter_ip = outtmp.iterations;
     
     % Run Linprog Simplex
     options = optimset(default_options, 'Algorithm', 'dual-simplex');
-    tic;
+    tstart = cputime;
     [x_sim, obj_sim, ~, outtmp] = linprog(g,[],[],A',b,l,u, options);
-    time_sim = toc;
+    time_sim = cputime-tstart;
     iter_sim = outtmp.iterations;
     
     % Save and compute stuff
@@ -244,7 +246,7 @@ for i=1:Nsolvers
     hold on
 end
 grid on
-legend(solvers, 'Location','northwest')
+legend(solvers, 'Location','southwest')
 xlabel("Number of variables, n")
 ylabel("Objective value")
 savefigpdf(f, "ex3_obj_large", 3);
@@ -327,6 +329,17 @@ xlabel("Number of variables, n")
 ylabel("Objective error")
 savefigpdf(f, "ex3_obj_err_large", 3);
 
+f = figure('Name','Relative Objective Error');
+for i=1:Nsolvers-1
+    plot(Nsizes, abs(obj_errs(i,:)/obj(1,:)), 'LineWidth',2);
+    hold on
+end
+grid on
+legend(sprintfc("Rel. obj. err. vs %s",solvers(2:end)), 'Location','northwest')
+xlabel("Number of variables, n")
+ylabel("Relative objective error")
+savefigpdf(f, "ex3_rel_obj_err_large", 3);
+
 f = figure('Name','Abs Objective Error semilog');
 for i=1:Nsolvers-1
     semilogy(Nsizes, abs(obj_errs(i,:)), 'LineWidth',2);
@@ -361,6 +374,8 @@ ylabel("MSE")
 savefigpdf(f, "ex3_mse_err_semilogy_large", 3);
 
 
+else
+    fprintf("Skipping Test2 - Size dependent problem 1");
 end
 
 
@@ -371,9 +386,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if run_test3
 % Number of tests and test sizes and arrays for storing results
-Ntests = 20;
+Ntests = 15;
 
-Nfix = 2000;
+Nfix = 1000;
 Msizes = round(linspace(100,Nfix, Ntests), -1);
 
 solvers = ["Own Solver", "LinProg IP", "LinProg Simplex"];
@@ -389,7 +404,7 @@ obj_errs = zeros(Nsolvers-1,Ntests);
 fprintf("\nTest 3 : Size dendendt problem - growing constraints, n fixed to n=%d, %d solvers, for each %d number of constraint(s)" + ...
         " between [%d, %d].\n\n", Nfix, Nsolvers, Ntests,Msizes(1),Msizes(end));
 
-rng(200) % Set seed
+rng(201) % Set seed
 poorMansProgressBar(Ntests);
 for j=1:Ntests
     poorMansProgressBar(0);  % Update progress for iteration
@@ -411,23 +426,23 @@ for j=1:Ntests
     z0 = ones(2*Nfix,1);
 
     % Run Own 
-    tic;
+    tstart = cputime;
     [x,y,z,s,iter] = LPSolverInteriorPoint(g,A,b,l,u,x0,y0,z0,s0);
-    time = toc;
+    time = cputime-tstart;
     obj = g'*x;
 
     % Run Linprog IP 
     options = optimset(default_options, 'Algorithm', 'interior-point');
-    tic;
+    tstart = cputime;
     [x_ip, obj_ip, ~, outtmp] = linprog(g,[],[],A',b,l,u, options);
-    time_ip = toc;
+    time_ip = cputime-tstart;
     iter_ip = outtmp.iterations;
     
     % Run Linprog Simplex
     options = optimset(default_options, 'Algorithm', 'dual-simplex');
-    tic;
+    tstart = cputime;
     [x_sim, obj_sim, ~, outtmp] = linprog(g,[],[],A',b,l,u, options);
-    time_sim = toc;
+    time_sim = cputime-tstart;
     iter_sim = outtmp.iterations;
     
     % Save and compute stuff
@@ -532,6 +547,18 @@ xlabel("Number of constraints, m")
 ylabel("Objective error")
 savefigpdf(f, "ex3_obj_err_large_constraints", 3);
 
+f = figure('Name','Growing m - Relative Objective Error');
+for i=1:Nsolvers-1
+    plot(Msizes, abs(obj_errs(i,:)/obj(1,:)), 'LineWidth',2);
+    hold on
+end
+grid on
+legend(sprintfc("Rel obj. err. vs %s",solvers(2:end)), 'Location','northwest')
+xlabel("Number of constraints, m")
+ylabel("Relative Objective error")
+savefigpdf(f, "ex3_rel_obj_err_large_constraints", 3);
+
+
 f = figure('Name','Growing m - abs Objective Error semilog');
 for i=1:Nsolvers-1
     semilogy(Msizes, abs(obj_errs(i,:)), 'LineWidth',2);
@@ -565,6 +592,10 @@ xlabel("Number of constraints, m")
 ylabel("MSE")
 savefigpdf(f, "ex3_mse_err_semilogy_large_constraints", 3);
 
+
+
+else
+    fprintf("Skipping Test3 - Size dependent problem 2");
 
 end
 
