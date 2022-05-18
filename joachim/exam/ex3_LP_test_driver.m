@@ -249,6 +249,17 @@ xlabel("Number of variables, n")
 ylabel("Objective value")
 savefigpdf(f, "ex3_obj_large", 3);
 
+f = figure('Name','Objective semilogy');
+for i=1:Nsolvers
+    semilogy(Nsizes, objs(i,:), 'LineWidth',2);
+    hold on
+end
+grid on
+legend(solvers, 'Location','northwest')
+xlabel("Number of variables, n")
+ylabel("Objective value")
+savefigpdf(f, "ex3_obj_semilogy_large", 3);
+
 f = figure('Name','Time');
 for i=1:Nsolvers
     plot(Nsizes, times(i,:), 'LineWidth',2);
@@ -279,8 +290,31 @@ end
 grid on
 legend(solvers, 'Location','northwest')
 xlabel("Number of variables, n")
-ylabel("iterations")
+ylabel("Iterations")
 savefigpdf(f, "ex3_iterations_large", 3);
+
+f = figure('Name','Iterations semilogy');
+for i=1:Nsolvers
+    semilogy(Nsizes, iterations(i,:), 'LineWidth',2);
+    hold on
+end
+grid on
+legend(solvers, 'Location','northwest')
+xlabel("Number of variables, n")
+ylabel("Iterations")
+savefigpdf(f, "ex3_iterations_semilogy_large", 3);
+
+
+f = figure('Name','Iterations No simplex');
+for i=1:Nsolvers-1
+    semilogy(Nsizes, iterations(i,:), 'LineWidth',2);
+    hold on
+end
+grid on
+legend(solvers([1,2]), 'Location','northwest')
+xlabel("Number of variables, n")
+ylabel("Iterations")
+savefigpdf(f, "ex3_iterations_no_simplex_large", 3);
 
 f = figure('Name','Objective Error');
 for i=1:Nsolvers-1
@@ -288,7 +322,7 @@ for i=1:Nsolvers-1
     hold on
 end
 grid on
-legend(sprintfc("Obj. err. vs %s",solvers(2:end)), 'Location','northwest')
+legend(sprintfc("Obj. err. vs %s",solvers(2:end)), 'Location','southeast')
 xlabel("Number of variables, n")
 ylabel("Objective error")
 savefigpdf(f, "ex3_obj_err_large", 3);
@@ -335,11 +369,11 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %% Size dependent problem 2 - Growing constraints    %%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-if run_test2
+if run_test3
 % Number of tests and test sizes and arrays for storing results
 Ntests = 20;
 
-Nfix = 1000;
+Nfix = 2000;
 Msizes = round(linspace(100,Nfix, Ntests), -1);
 
 solvers = ["Own Solver", "LinProg IP", "LinProg Simplex"];
@@ -351,7 +385,6 @@ times = zeros(Nsolvers, Ntests);
 MSE_errs = zeros(Nsolvers-1,Ntests);
 obj_errs = zeros(Nsolvers-1,Ntests);
 
-x_true = nan*zeros(Ntests,max(Nsizes));
 
 fprintf("\nTest 3 : Size dendendt problem - growing constraints, n fixed to n=%d, %d solvers, for each %d number of constraint(s)" + ...
         " between [%d, %d].\n\n", Nfix, Nsolvers, Ntests,Msizes(1),Msizes(end));
@@ -368,14 +401,14 @@ for j=1:Ntests
     % Defining the data
     [g,A,b,x,lam] = randomLP(Nfix,m_val, 1);
     [n_var,m_eqcon] = size(A);
-    l = zeros(n_val,1);
-    u = ones(n_val,1);
+    l = zeros(Nfix,1);
+    u = ones(Nfix,1);
 
     % Starting point 
-    x0 = zeros(n_var,1);
-    s0 = ones(2*n_var,1);
-    y0 = ones(m_eqcon,1);
-    z0 = ones(2*n_var,1);
+    x0 = zeros(Nfix,1);
+    s0 = ones(2*Nfix,1);
+    y0 = ones(m_val,1);
+    z0 = ones(2*Nfix,1);
 
     % Run Own 
     tic;
@@ -462,8 +495,31 @@ end
 grid on
 legend(solvers, 'Location','northwest')
 xlabel("Number of constraints, m")
-ylabel("iterations")
+ylabel("Iterations")
 savefigpdf(f, "ex3_iterations_large_constraints", 3);
+
+f = figure('Name','Growing m - Iterations semilog');
+for i=1:Nsolvers
+    semilogy(Msizes, iterations(i,:), 'LineWidth',2);
+    hold on
+end
+grid on
+legend(solvers, 'Location','northwest')
+xlabel("Number of constraints, m")
+ylabel("Iterations")
+savefigpdf(f, "ex3_iterations_semilog_large_constraints", 3);
+
+
+f = figure('Name','Growing m - Iterations No simplex');
+for i=1:Nsolvers-1
+    plot(Msizes, iterations(i,:), 'LineWidth',2);
+    hold on
+end
+grid on
+legend(solvers([1,2]), 'Location','northwest')
+xlabel("Number of constraints, m")
+ylabel("Iterations")
+savefigpdf(f, "ex3_iterations_no_sim_large_constraints", 3);
 
 f = figure('Name','Growing m - Objective Error');
 for i=1:Nsolvers-1
