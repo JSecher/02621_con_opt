@@ -1,4 +1,4 @@
-function [x, obj, lambda, iter] = SQPsolver(objfun,confun,xlower,xupper,clower,cupper,x0,solver)
+function [x, obj, lambda, output] = SQPsolver(objfun,confun,xlower,xupper,clower,cupper,x0,solver)
 % SQPSolver  Interface for variuos SQP solvers.
 %
 % Solves NLP's on the form  
@@ -9,8 +9,10 @@ function [x, obj, lambda, iter] = SQPsolver(objfun,confun,xlower,xupper,clower,c
 % With options for using solvers with different facotrizations. 
 % 
 % Inputs:
-%   objfun  : Objective function, should take a vector x of size size(n)
-%   confun  : Objective function, should take a vector x of size size(n)
+%   objfun  : Objective function, should take a vector x of size size(n),
+%           : and return [function value at x, gradients at x]
+%   confun  : Constraint function, should take a vector x of size size(n)
+%           : and reutrn [constraint function value at x, constraint gradients at x]
 %   xlower  : (n,)-dim vector of lower bounds for x
 %   xupper  : (n,)-dim vector of upper bounds for x
 %   clower  : (m,)-dim vector of lower bounds for x
@@ -23,8 +25,7 @@ function [x, obj, lambda, iter] = SQPsolver(objfun,confun,xlower,xupper,clower,c
 %   x       : a (n,) dimensional vector of found solution
 %   obj     : a float giving the objective value
 %   lambda  : a (m,) dimensional vector of lagrange multipliers
-%   iter    : a vector of shape (n, num iterations) given the intermediate
-%             steps
+%   output  : a object with performance and iteration information
 %
 % See also SQPsolverBFGS
 %%
@@ -32,7 +33,7 @@ function [x, obj, lambda, iter] = SQPsolver(objfun,confun,xlower,xupper,clower,c
 solver_match = lower(solver);
 switch solver_match
     case "bfgs"
-        [x, lambda, iter] = SQPsolverBFGS(objfun,confun,xlower,xupper,clower,cupper,x0);
+        [x, lambda, output] = SQPsolverBFGS(objfun,confun,xlower,xupper,clower,cupper,x0);
     case "line"
         error("Line search is not implemented")
     case "trust"
