@@ -30,57 +30,69 @@ maxiter = 100;
 epsilon = 1e-9;
 
 % Allocate storage
-x = x0;
-[~,df] = objfun(x);
-[c,dc] = confun(x);
-n = length(x);
+n = length(x0);
+x = reshape(x0, n, 1);      % Make sure x is a collumn vector
+[~,df] = feval(objfun,x);   % Compute obj and con function for x0
+[c,dc] = feval(confun,x);
 m = size(c,1);
 B = eye(n);
+z = ones(2*n+2*m,1);
+
+% Create outputs struct
+output.iterations = 0;
+output.converged = false;
+output.xk = x;
+output.time_qp = 0;
 
 % Define options for quadprog
 options = optimset('Display', 'off');
 
 % Run until convergence or max iter
-iter = 0;
-converged = false;
-while (iter < maxiter) && ~converged
+while (output.iterations < maxiter) && ~output.converged
     
-    % Update lower and upper bounds for the quadrastart = cputime; approximation
-    lk = -x+l;
-    uk = -x+u;
-    clk = -c+cl;
-    cuk = -c+cu;
+    output.iterations = output.iterations + 1;
+
+    % Set lower and upper bounds iteration k 
+    xlowerk = -x + xlower;
+    xupperk = -x + xupper;
+    clowerk = -c + clower;
+    cupperk = -c + cupper;
     
     start = cputime;
-    [Deltax,~,~,~,lambda] = quadprog(B,df,-[dc'; -dc'],-[clk;-cuk],[],[],lk,uk,[], options);
-    time = cputime-start;
-
+    [Deltax,~,~,~,lambda] = quadprog(B,df, ...
+                                     -[dc'; -dc'],-[clowerk;-cupperk], ...
+                                     [],[], ...
+                                     xlowerk,xupperk,[], ...
+                                     options);
+    output.time_qp = output.time_qp + (cputime-start);
+    
     zhat = [lambda.lower; lambda.upper; lambda.ineqlin];
     
-    pz = zhat-z;
-
     % Update the current point
-    z = z + pz;
+    z = z + (zhat-z);
     x = x + Deltax;
     
+    % Save step
+    output.xk(:, output.iterations+1) = x;
+    
     % For the quasi Newton update  
-    dL = df - (z(lid)-z(uid)+dc*z(clid)-dc*z(cuid));
+    dL = df - (z(1:m)-z((m+1):(2*m))+dc*z((2*m+1):(2*m+n))-dc*z((2*m+n+1):(2*(n+m))));
 
     % Compute function values for next iteration
-    [~,df] = feval(obj,x);
-    [c,dc] = feval(con,x);
+    [~,df] = feval(objfun,x);
+    [c,dc] = feval(confun,x);
     
     %% Dampend BFGS Update
     
     % Compute Quasi Newton update of the hessian
     dL2 = df - (z(lid)-z(uid)+dc*z(clid)-dc*z(cuid));
     
-    % Compute set values
-    Deltax = pk;
+    % Compute values used multiple times for for BFGS update 
     q = dL2-dL;
     Bp = (B*Deltax);
     pBp = Deltax'*Bp;
     
+    % Compute appropiate theta value
     if Deltax'*q < 0.2*pBp
         theta = (0.8*pBp)/(pBp-Deltax'*q);
     else
@@ -92,11 +104,12 @@ while (iter < maxiter) && ~converged
     
     % Check for convergence
     if norm(dL2, 'inf') < epsilon
-        converged = true;
+        output.converged = true;
     end
 end
 
-if ~converged
+% Warn if not converged
+if ~output.converged
     warning("Max number of iterations reached before convergence")
 
 end
