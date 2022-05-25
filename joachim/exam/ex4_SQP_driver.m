@@ -185,7 +185,7 @@ if runBFGS_46
 clear data
 x0s = [[0.0; 0.0],[1.0; 2.0], [-4.0; 0], [-4; 1]];
 
-for j=1:1%length(x0s)
+for j=1:length(x0s)
     %sympref('FloatingPointOutput',1);
     x0 = x0s(:,j);    % Initial point
     
