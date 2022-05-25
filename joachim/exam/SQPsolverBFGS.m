@@ -32,8 +32,8 @@ epsilon = 1e-9;
 % Allocate storage
 n = length(x0);
 x = reshape(x0, n, 1);      % Make sure x is a collumn vector
-[~,df] = feval(objfun,x);   % Compute obj and con function for x0
-[c,dc] = feval(confun,x);
+[~,df] = objfun(x);         % Compute obj and con function for x0
+[c,~,dc,~] = confun(x);
 m = size(c,1);
 B = eye(n);
 z = ones(2*n+2*m,1);
@@ -79,13 +79,13 @@ while (output.iterations < maxiter) && ~output.converged
     dL = df - (z(1:m)-z((m+1):(2*m))+dc*z((2*m+1):(2*m+n))-dc*z((2*m+n+1):(2*(n+m))));
 
     % Compute function values for next iteration
-    [~,df] = feval(objfun,x);
-    [c,dc] = feval(confun,x);
+    [~,df] = objfun(x);
+    [c,~,dc,~] = confun(x);
     
     %% Dampend BFGS Update
     
     % Compute Quasi Newton update of the hessian
-    dL2 = df - (z(lid)-z(uid)+dc*z(clid)-dc*z(cuid));
+    dL2 = df - (z(1:m)-z((m+1):(2*m))+dc*z((2*m+1):(2*m+n))-dc*z((2*m+n+1):(2*(n+m))));
     
     % Compute values used multiple times for for BFGS update 
     q = dL2-dL;
