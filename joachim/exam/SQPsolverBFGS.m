@@ -34,9 +34,16 @@ n = length(x0);
 x = reshape(x0, n, 1);      % Make sure x is a collumn vector
 [~,df] = objfun(x);         % Compute obj and con function for x0
 [c,~,dc,~] = confun(x);
+c = -1*c;
+dc = -1*dc;
 m = size(c,1);
 B = eye(n);
-z = ones(2*n+2*m,1);
+z = ones(2*m+2*n,1);
+lid = 1:m;
+uid = (m+1):(2*m);
+clid = (2*m+1):(2*m+n);
+cuid = (2*m+n+1):(2*(n+m));
+
 
 % Create outputs struct
 output.iterations = 0;
@@ -59,13 +66,16 @@ while (output.iterations < maxiter) && ~output.converged
     cupperk = -c + cupper;
     
     start = cputime;
-    [Deltax,~,~,~,lambda] = quadprog(B,df, ...
+    [Deltax,~,flag,out,lambda] = quadprog(B,df, ...
                                      -[dc'; -dc'],-[clowerk;-cupperk], ...
                                      [],[], ...
                                      xlowerk,xupperk,[], ...
                                      options);
     output.time_qp = output.time_qp + (cputime-start);
     
+    if flag < 0
+        error("Quadprog error: %s", out.message)
+    end
     zhat = [lambda.lower; lambda.upper; lambda.ineqlin];
     
     % Update the current point
@@ -76,16 +86,18 @@ while (output.iterations < maxiter) && ~output.converged
     output.xk(:, output.iterations+1) = x;
     
     % For the quasi Newton update  
-    dL = df - (z(1:m)-z((m+1):(2*m))+dc*z((2*m+1):(2*m+n))-dc*z((2*m+n+1):(2*(n+m))));
+    dL = df - z(lid)-z(uid)-dc*z(clid)-dc*z(cuid);
 
     % Compute function values for next iteration
     [~,df] = objfun(x);
     [c,~,dc,~] = confun(x);
-    
+    c = -1*c;
+    dc = -1*dc;
     %% Dampend BFGS Update
     
     % Compute Quasi Newton update of the hessian
-    dL2 = df - (z(1:m)-z((m+1):(2*m))+dc*z((2*m+1):(2*m+n))-dc*z((2*m+n+1):(2*(n+m))));
+    dL2 = df - z(lid)-z(uid)-dc*z(clid)-dc*z(cuid);
+
     
     % Compute values used multiple times for for BFGS update 
     q = dL2-dL;

@@ -4,7 +4,8 @@ clear
 close all
 
 runContourPlot_44 = false;
-runSolveTest_45= true;
+runSolveTest_45= false;
+runBFGS_46 = true;
 
 % Import CasADi
 if isfolder('../../casadi-v3.5.5')
@@ -178,10 +179,72 @@ savelatexTable(latex, input.tableLabel, 4);
 
 
 end
-%% Problem 4.6 - 
+%% Problem 4.6 - Dampend BFGS
+if runBFGS_46 
+
+clear data
+x0s = [[0.0; 0.0],[1.0; 2.0], [-4.0; 0], [-4; 1]];
+
+for j=1:1%length(x0s)
+    %sympref('FloatingPointOutput',1);
+    x0 = x0s(:,j);    % Initial point
+    
+    xl = [-5; -5];      % Lower bound for x
+    xu = [5; 5];        % Upper bound for x
+    cl = [0; 0];        % Lower bound for constraints 
+    cu = [47; 70];      % Upper bound for constraints
+    
+    tstart = cputime;
+    [sol_bfgs, obj, lambda, output] = SQPsolver(@objfungradHimmelblau, ...
+                                                @confungradHimmelblau1, ...
+                                                xl, xu, ...
+                                                cl, cu, ...
+                                                x0, 'bfgs');
+    t_bfgs_total = cputime - tstart;
+    
+    
+    % Compare with fmin con
+    options = optimoptions('fmincon',... 
+                           'SpecifyObjectiveGradient',true,... 
+                           'SpecifyConstraintGradient',true,... 
+                           'Display','none',... 
+                           'Algorithm','interior-point');
+    tstart = cputime;
+    [sol_fmin_grad,fval_grad,exitflag_grad,output_grad]=fmincon( ...
+                                            @objfungradHimmelblau, x0, ...
+                                            [], [], [], [], ...
+                                            xl, xu, ...
+                                            @confungradHimmelblau1, ...
+                                            options);
+    time_fmincon_grad = cputime - tstart;
+    
+    fprintf('Found solutions for x0 = [%.2f, %.2f] ::\n', x0(1), x0(2)); 
+    fprintf('\t BFGS solution: [%.5e, %.5e], objective: %.5e, time: %.5e, iter: %d\n', sol_bfgs(1), sol_bfgs(2), obj, t_bfgs_total, output.iterations);
+    fprintf('\t fmincon grad solution: [%.5e, %.5e], objective: %.5e, time: %.5e\n', sol_fmin_grad(1), sol_fmin_grad(2), fval_grad, time_fmincon_grad);    
+    fprintf('\t MSE: %.5e\n', mean(sqrt((sol_fmin_grad-sol_bfgs).^2)));    
+    
+    fig = figure("Name", sprintf("SQP - BFGS - Himmelblau - Solution for x0=[%+.1f, %+.1f]",x0(1),x0(2)), 'Position', [150, 150, 600, 600]);
+    hold on
+    % Create contour plot and constraints
+    [cfig, conFigs] = contourHimmel(true);
+    
+    % Add points of interest
+    h = traceIterations(output.xk, "b");
+    intp = plotPoint(x0(1),x0(2), "int");
+    solp_bfgs = plotPoint(sol_bfgs(1),sol_bfgs(2), "sol", "y", 16);
+    solp_grad = plotPoint(sol_fmin_grad(1),sol_fmin_grad(2), "gen", "g", 8);
+    legend([intp,solp_grad,solp_bfgs, h],{'x_0', 'fmincon solution', 'SQP BFGS sol.', "Trace for BFGS"},'Location','southwest')
+    hold off
+    savefigpdf(fig, sprintf("ex4_6_bfgs_himmelblau_x0=%+.0f_%+.0f",x0(1),x0(2)), 4);
+
+    %data(j,:) = [fval, sol_fmin', time_fmincon, nan...
+    %            fval_grad, sol_fmin_grad', time_fmincon_grad, nan ...
+     %            obj_cas, sol_cas', time_cas];
+
+end
 
 
-
+end
 
 %% Function definition 
 
@@ -214,7 +277,8 @@ function [f,dfdx] = objfungradHimmelblau(x,p)
     % compute the gradient of f
     if nargout > 1
         dfdx = zeros(2,1);
-        dfdx(1,1) = 4*tmp1*x(1) + 2*tmp2; dfdx(2,1) = 2*tmp1 + 4*tmp2*x(2);
+        dfdx(1,1) = 4*tmp1*x(1) + 2*tmp2; 
+        dfdx(2,1) = 2*tmp1 + 4*tmp2*x(2);
     end
 end
 
@@ -236,4 +300,18 @@ function [c,ceq,dcdx,dceqdx] = confungradHimmelblau1(x,p)
         dcdx(1,2) = 4; % dc1dx1
         dcdx(2,2) = -10; % dc1dx2
     end
+end
+
+function [h] = traceIterations(xks, color, linetype)
+% Display the iterations for a SQP algortihm for two variables
+    if nargin<2
+        color = 'r';
+    end
+    if nargin<3
+        linetype = '-.';
+    end
+    spec = sprintf("%so%s", linetype, color);
+    Nvals = size(xks, 2);
+    plot(xks(1,[1, Nvals]),xks(2,[1,Nvals]),"MarkerFaceColor", color,'markersize',8,'LineStyle', 'none' );
+    h = plot(xks(1,:),xks(2,:),spec,'linewidth',2,'MarkerSize',5);
 end
