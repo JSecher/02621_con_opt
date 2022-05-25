@@ -4,8 +4,8 @@ function [x, lambda, output] = SQPsolverBFGS(objfun,confun,xlower,xupper,clower,
 % Solves NLP's on the form  
 %
 %   \min_{x} f(x) 
-%    s.t.    0 <= c(x) <= b  
-%
+%    s.t.    cl <= c(x) <= cu  
+%            xl <= x <= xu
 % 
 % Inputs:
 %   objfun  : Objective function, should take a vector x of size size(n),
