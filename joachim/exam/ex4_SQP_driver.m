@@ -237,12 +237,46 @@ for j=1:length(x0s)
     hold off
     savefigpdf(fig, sprintf("ex4_6_bfgs_himmelblau_x0=%+.0f_%+.0f",x0(1),x0(2)), 4);
 
-    %data(j,:) = [fval, sol_fmin', time_fmincon, nan...
-    %            fval_grad, sol_fmin_grad', time_fmincon_grad, nan ...
-     %            obj_cas, sol_cas', time_cas];
+    data(j,:) = [fval_grad, sol_fmin_grad', time_fmincon_grad, nan ...
+                 obj, sol_bfgs', t_bfgs_total, output.iterations, ...
+                 nan, mean(sqrt((sol_fmin_grad-sol_bfgs).^2))];
 
 end
 
+input.data = data';
+% Set column labels (use empty string for no label):
+input.tableColLabels = sprintfc("$x_0=[%.1f, %.1f]$", x0s')';
+% Set row labels (use empty string for no label):
+input.tableRowLabels = {'$f(x)_{\textit{fmincom}} =$', ...
+                        '$x_{\textit{fmincom}} = $', ...
+                        '', ...
+                        '$\text{time}_{\textit{fmincom}}\, [s] =$', ...
+                        '', ...
+                        '$f(x)_{\textit{SQP BFGS}} =$', ...
+                        '$x_{\textit{SQP BFGS}} =$', ...
+                        '', ...
+                        '$\text{time}_{\textit{SQP BFGS}}\, [s] =$', ...
+                        '$\text{Interations}_{\textit{SQP BFGS}}\, =$', ...
+                        '', ...
+                        'MSE = '};
+                        
+% Set the row format of the data values 
+input.dataFormatMode = 'row';
+input.dataFormat = {'%.5f', 9, "%d", 1, "%.5e",2};
+% Column alignment ('l'=left-justified, 'c'=centered,'r'=right-justified):
+input.tableColumnAlignment = 'r';
+% Switch table borders on/off:
+input.booktabs = 1;
+% LaTex table caption:
+input.tableCaption = sprintf('Comparison of found solution of SQP BFGS and $\textit{fmincon}$ for different inital points for the Himmelblau test problem.');
+% LaTex table label:
+input.tableLabel = 'ex4_bfgs_himmel';
+input.makeCompleteLatexDocument = 0;
+input.dataNanString = '';
+input.tablePlacement = '!ht';
+% Now call the function to generate LaTex code:
+latex = latexTable(input);
+savelatexTable(latex, input.tableLabel, 4);
 
 end
 
