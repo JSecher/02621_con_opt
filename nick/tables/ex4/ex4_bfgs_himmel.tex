@@ -1,0 +1,23 @@
+\begin{table}[!ht]
+\centering
+\begin{tabular}{rrrrr}
+\toprule
+ & $x_0=[0.0, 0.0]$ & $x_0=[1.0, 2.0]$ & $x_0=[-4.0, 0.0]$ & $x_0=[-4.0, 1.0]$ \\
+\midrule
+$f(x)_{\textit{fmincom}} =$ & 0.00000 & 0.00000 & 72.85555 & 35.92985 \\
+$x_{\textit{fmincom}} = $ & 3.00000 & 3.00000 & -3.54854 & -3.65461 \\
+ & 2.00000 & 2.00000 & -1.41941 & 2.73772 \\
+$\text{time}_{\textit{fmincom}}\, [s] =$ & 0.04688 & 0.06250 & 0.10938 & 0.01563 \\
+ &  &  &  &  \\
+$f(x)_{\textit{SQP BFGS}} =$ & 0.00000 & 0.00000 & 72.85554 & 35.92985 \\
+$x_{\textit{SQP BFGS}} =$ & 3.00000 & 3.00000 & -3.54854 & -3.65461 \\
+ & 2.00000 & 2.00000 & -1.41941 & 2.73772 \\
+$\text{time}_{\textit{SQP BFGS}}\, [s] =$ & 0.04688 & 0.06250 & 0.04688 & 0.01563 \\
+$\text{Interations}_{\textit{SQP BFGS}}\, =$ & 21 & 17 & 8 & 15 \\
+ &  &  &  &  \\
+MSE =  & 5.24815e-10 & 5.63965e-08 & 2.15061e-08 & 6.06129e-09 \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of found solution of SQP BFGS and $	extit{fmincon}$ for different inital points for the Himmelblau test problem.}
+\label{table:ex4_bfgs_himmel}
+\end{table}

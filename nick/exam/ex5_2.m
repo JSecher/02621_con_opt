@@ -39,16 +39,31 @@ pf_risks(i) = x'*cov*x;
 optPf(i,:) = x;
 end
 
-%% Plot the efficient frontiers portfolios when 
-% allowing or disallowing shorting, solving the Bicriterion
+opt_return1 = Rs(pf_risks==min(pf_risks));
+opt_risk1 = min(pf_risks);
 
+effRs = Rs(find(Rs == opt_return1):end);
+effRisk = pf_risks(find(Rs == opt_return1):end);
+
+%% Setup for bi-criterion
+H = cov;
+f = -returns;
+
+Aeq = [1,1,1,1,1];
+beq = 1;
+
+Aineq = -eye(5);
+bineq = zeros(5,1);  
+
+%% Plot the efficient frontiers portfolios when 
+
+%allowing or disallowing shorting, solving the Bicriterion
 n_runs = 1000;
 x_nonshort = zeros(n_runs,5,3);
 x_short = zeros(n_runs,5,3);
 
 
-alphas = linspace(0,1,n_runs);
-
+alphas = linspace(0.001,1,n_runs);
 port_risk_nonshort = zeros(n_runs,1,3);
 port_risk_short = zeros(n_runs,1,3);
 
@@ -85,8 +100,8 @@ for i = 1:n_runs
     end
     
     % With shorting, i.e. an EQP problem
-    x_short(i,:,1) = quadprog( alphas(i).*H, (1-alphas(i)).*f', [], [], Aeq, beq,[],[],[]); 
-    %x_short(i,:,2) = EqualityQPSolver(alphas(i).*H, (1-alphas(i)).*f', Aeq', beq, "rangespace");
+    x_short(i,:,1) = quadprog(alphas(i).*H, (1-alphas(i)).*f', [], [], Aeq, beq,[],[],[]); 
+    x_short(i,:,2) = EqualityQPSolver(alphas(i).*H, (1-alphas(i)).*f', Aeq', beq, "rangespace");
                    
     if cvx_solve
         cvx_begin quiet
@@ -135,7 +150,7 @@ hold on
 h1 = plot(Rs,pf_risks,'r');
 plot(returns, diag(cov),'ro')
 h2 = plot(port_return_nonshort(:,2),port_risk_nonshort(:,2),'b');
-plot(opt_return1,opt_risk1 ,'k|','MarkerSize', 14)
+plot(opt_return1,opt_risk1 ,'k*','MarkerSize', 14)
 title('Combined static return and bi-criterion')
 xlabel('Return [%]')
 ylabel('Risk [Var]')
@@ -144,12 +159,12 @@ hold off
 savefigpdf(fig3, "ex5_risk_return_static_return", 5);
 
 %% Exercise 5.5-5.7, Solving for different alpha with and without short-selling
-n_runs = 100;
+n_runs = 500;
 x_short = zeros(n_runs,5,3);
 x_nonshort = zeros(n_runs,5,3);
 
 
-alphas = linspace(0,1,n_runs);
+alphas = linspace(0.001,1,n_runs);
 port_risk_short = zeros(n_runs,1,3);
 port_risk_nonshort = zeros(n_runs,1,3);
 port_return_short = zeros(n_runs,1,3);
@@ -161,6 +176,7 @@ y0 = ones(length(beq),1);
 z0 = ones(2*5,1);
 n = 5;
 
+clear log
 for i = 1:n_runs
     if mod(i,n_runs/10)==0
         disp(i)
@@ -183,7 +199,7 @@ for i = 1:n_runs
     
     % With shorting, i.e. an EQP problem
     x_short(i,:,1) = quadprog( alphas(i).*H, (1-alphas(i)).*f', [], [], Aeq, beq,[],[],[],options); 
-    %x_short(i,:,2) = EqualityQPSolver(alphas(i).*H, (1-alphas(i)).*f',Aeq', beq, "rangespace");
+    x_short(i,:,2) = EqualityQPSolver(alphas(i).*H, (1-alphas(i)).*f',Aeq', beq, "rangespace");
     if cvx_solve
         cvx_begin quiet
             %cvx_precision low

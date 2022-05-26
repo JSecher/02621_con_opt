@@ -1,0 +1,22 @@
+\begin{table}[ht]
+\centering
+\begin{tabular}{rrrr}
+\toprule
+ & Linprog IP & Own Solver & Linprog Simplex \\
+\midrule
+$\phi =$ & -1.8680e+01 & -1.8680e+01 & -1.8680e+01 \\
+$\Delta \phi =$ & 0.0000e+00 & 1.3098e-10 &  \\
+x = & 1.8488e-17 & 2.8474e-12 & 0.0000e+00 \\
+ & 5.7270e-17 & 2.9586e-12 & 0.0000e+00 \\
+ & 5.2980e-18 & 2.1953e-11 & 0.0000e+00 \\
+ & 1.5358e-17 & 2.1927e-12 & 0.0000e+00 \\
+ & 1.0000e+00 & 1.0000e+00 & 1.0000e+00 \\
+MSE = & 4.1487e-17 & 1.2078e-11 &  \\
+ &  &  &  \\
+Iterations = & 1.0659e-01 & 4.4003e-03 & 3.7048e-02 \\
+Time = & 4 & 7 & 1 \\
+\bottomrule
+\end{tabular}
+\caption{Comparison between LinProg interior-point, Own LP interior-point and LinProg Simplex alogorithm. Error is computed relative to LinProg simplex solver.}
+\label{table:ex3_objective_comp_simplex}
+\end{table}
