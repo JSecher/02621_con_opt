@@ -37,8 +37,9 @@ x = quadprog( H, [], Aineq, bineq, Aeq, beq,[],[],[],options);
 pf_risks(i) = x'*cov*x;
 optPf(i,:) = x;
 end
+
 %% Plotting the plotting the efficient frontier
-f = figure('Name','b vals Relative Error solver');
+f = figure('Name','Efficient frontier');
 hold on
 opt_return1 = Rs(pf_risks==min(pf_risks));
 opt_risk1 = min(pf_risks);
