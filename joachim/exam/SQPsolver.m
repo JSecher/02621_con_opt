@@ -36,7 +36,7 @@ switch solver_match
     case "bfgs"
         [x, lambda, output] = SQPsolverBFGS(objfun,confun,xlower,xupper,clower,cupper,x0);
     case "line"
-        error("Line search is not implemented")
+        [x, lambda, output] = SQPsolverLS(objfun,confun,xlower,xupper,clower,cupper,x0);
     case "trust"
         error("Trust region is not implemented")
     otherwise

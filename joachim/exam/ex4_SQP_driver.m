@@ -5,7 +5,8 @@ close all
 
 runContourPlot_44 = false;
 runSolveTest_45= false;
-runBFGS_46 = true;
+runBFGS_46 = false;
+runBFGS_LS_47 = true;
 
 % Import CasADi
 if isfolder('../../casadi-v3.5.5')
@@ -238,7 +239,7 @@ for j=1:length(x0s)
     savefigpdf(fig, sprintf("ex4_6_bfgs_himmelblau_x0=%+.0f_%+.0f",x0(1),x0(2)), 4);
 
     data(j,:) = [fval_grad, sol_fmin_grad', time_fmincon_grad, nan ...
-                 obj, sol_bfgs', t_bfgs_total, output.iterations, ...
+        obj, sol_bfgs', t_bfgs_total, output.iterations, output.function_calls ...
                  nan, mean(sqrt((sol_fmin_grad-sol_bfgs).^2))];
 
 end
@@ -257,12 +258,13 @@ input.tableRowLabels = {'$f(x)_{\textit{fmincom}} =$', ...
                         '', ...
                         '$\text{time}_{\textit{SQP BFGS}}\, [s] =$', ...
                         '$\text{Interations}_{\textit{SQP BFGS}}\, =$', ...
+                        '$\text{Function Calls}_{\textit{SQP BFGS}}\, =$'
                         '', ...
                         'MSE = '};
                         
 % Set the row format of the data values 
 input.dataFormatMode = 'row';
-input.dataFormat = {'%.5f', 9, "%d", 1, "%.5e",2};
+input.dataFormat = {'%.5f', 9, "%d", 2, "%.5e",2};
 % Column alignment ('l'=left-justified, 'c'=centered,'r'=right-justified):
 input.tableColumnAlignment = 'r';
 % Switch table borders on/off:
@@ -271,6 +273,113 @@ input.booktabs = 1;
 input.tableCaption = sprintf('Comparison of found solution of SQP BFGS and $\textit{fmincon}$ for different inital points for the Himmelblau test problem.');
 % LaTex table label:
 input.tableLabel = 'ex4_bfgs_himmel';
+input.makeCompleteLatexDocument = 0;
+input.dataNanString = '';
+input.tablePlacement = '!ht';
+% Now call the function to generate LaTex code:
+latex = latexTable(input);
+savelatexTable(latex, input.tableLabel, 4);
+
+end
+
+%% Problem 4.7 - Dampend BFGS with line search 
+if runBFGS_LS_47
+
+clear data
+x0s = [[0.0; 0.0],[1.0; 2.0], [-4.0; 0], [-4; 1]];
+
+fig = figure("Name", "SQP - Line Search - Himmelblau - Solution for x0s", 'Position', [150, 150, 600, 600]);
+hold on
+% Create contour plot and constraints
+[cfig, conFigs] = contourHimmel(true);
+
+traces = [];
+legens = [];
+for j=1:length(x0s)
+    %sympref('FloatingPointOutput',1);
+    x0 = x0s(:,j);    % Initial point
+    
+    xl = [-5; -5];      % Lower bound for x
+    xu = [5; 5];        % Upper bound for x
+    cl = [0; 0];        % Lower bound for constraints 
+    cu = [47; 70];      % Upper bound for constraints
+    
+    tstart = cputime;
+    [sol_ls, obj, lambda, output] = SQPsolver(@objfungradHimmelblau, ...
+                                                @confungradHimmelblau1, ...
+                                                xl, xu, ...
+                                                cl, cu, ...
+                                                x0, 'line');
+    t_ls_total = cputime - tstart;
+    
+    
+    % Compare with fmin con
+    options = optimoptions('fmincon',... 
+                           'SpecifyObjectiveGradient',true,... 
+                           'SpecifyConstraintGradient',true,... 
+                           'Display','none',... 
+                           'Algorithm','interior-point');
+    tstart = cputime;
+    [sol_fmin_grad,fval_grad,exitflag_grad,output_grad]=fmincon( ...
+                                            @objfungradHimmelblau, x0, ...
+                                            [], [], [], [], ...
+                                            xl, xu, ...
+                                            @confungradHimmelblau1, ...
+                                            options);
+    time_fmincon_grad = cputime - tstart;
+    
+    fprintf('Found solutions for x0 = [%.2f, %.2f] ::\n', x0(1), x0(2)); 
+    fprintf('\t Line Search solution: [%.5e, %.5e], objective: %.5e, time: %.5e, iter: %d\n', sol_ls(1), sol_ls(2), obj, t_ls_total, output.iterations);
+    fprintf('\t fmincon grad solution: [%.5e, %.5e], objective: %.5e, time: %.5e\n', sol_fmin_grad(1), sol_fmin_grad(2), fval_grad, time_fmincon_grad);    
+    fprintf('\t MSE: %.5e\n', mean(sqrt((sol_fmin_grad-sol_ls).^2)));    
+    
+
+    % Add points of interest
+    h = traceIterations(output.xk, "b");
+    intp = plotPoint(x0(1),x0(2), "int");
+    solp_ls = plotPoint(sol_ls(1),sol_ls(2), "sol", "y", 16);
+    % solp_grad = plotPoint(sol_fmin_grad(1),sol_fmin_grad(2), "gen", "g", 8);
+    
+    data(j,:) = [fval_grad, sol_fmin_grad', time_fmincon_grad, nan ...
+                obj, sol_ls', t_ls_total, output.iterations, output.function_calls ...
+                 nan, mean(sqrt((sol_fmin_grad-sol_ls).^2))];
+
+end
+
+legend([intp,solp_ls, h],{'x_0' 'SQP BFGS sol.', 'Trace of iter.'},'Location','southwest')
+hold off
+savefigpdf(fig, "ex4_6_ls_himmelblau_x0s", 4);
+
+
+input.data = data';
+% Set column labels (use empty string for no label):
+input.tableColLabels = sprintfc("$x_0=[%.1f, %.1f]$", x0s')';
+% Set row labels (use empty string for no label):
+input.tableRowLabels = {'$f(x)_{\textit{fmincom}} =$', ...
+                        '$x_{\textit{fmincom}} = $', ...
+                        '', ...
+                        '$\text{time}_{\textit{fmincom}}\, [s] =$', ...
+                        '', ...
+                        '$f(x)_{\textit{SQP BFGS}} =$', ...
+                        '$x_{\textit{SQP BFGS}} =$', ...
+                        '', ...
+                        '$\text{time}_{\textit{SQP BFGS}}\, [s] =$', ...
+                        '$\text{Interations}_{\textit{SQP BFGS}}\, =$', ...
+                        '$\text{Function Calls}_{\textit{SQP BFGS}}\, =$',...
+                        '', ...
+                        'MSE = '};
+                        
+% Set the row format of the data values 
+input.dataFormatMode = 'row';
+input.dataFormat = {'%.5f', 9, "%d", 2, "%.5e",2};
+% Column alignment ('l'=left-justified, 'c'=centered,'r'=right-justified):
+input.tableColumnAlignment = 'r';
+% Switch table borders on/off:
+input.booktabs = 1;
+% LaTex table caption:
+input.tableCaption = sprintf('Comparison of found solution of SQP Line Search and \\textit{fmincon} for different inital points for the Himmelblau test problem.');
+% LaTex table label:
+input.tableLabel = 'ex4_ls_himmel';
 input.makeCompleteLatexDocument = 0;
 input.dataNanString = '';
 input.tablePlacement = '!ht';

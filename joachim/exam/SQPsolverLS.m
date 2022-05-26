@@ -1,5 +1,5 @@
-function [x, lambda, output] = SQPsolverBFGS(objfun,confun,xlower,xupper,clower,cupper,x0)
-% SQPsolverBFGS SQP solvers using dampend BFGS approximation.
+function [x, lambda, output] = SQPsolverLS(objfun,confun,xlower,xupper,clower,cupper,x0)
+% SQPsolverLS SQP solvers using dampend BFGS approximation and line seach.
 %
 % Solves NLP's on the form  
 %
@@ -28,11 +28,13 @@ function [x, lambda, output] = SQPsolverBFGS(objfun,confun,xlower,xupper,clower,
 % Define constants 
 maxiter = 100;
 epsilon = 1e-9;
+tol_c1 = 0.1;   % Tolerance for line search
+non_monotone = true;
 
 % Allocate storage
 n = length(x0);
 x = reshape(x0, n, 1);      % Make sure x is a collumn vector
-[~,df] = objfun(x);         % Compute obj and con function for x0
+[f,df] = objfun(x);         % Compute obj and con function for x0
 [c,~,dc,~] = confun(x);
 c = -1*c;
 dc = -1*dc;
@@ -43,12 +45,14 @@ lid = 1:m;
 uid = (m+1):(2*m);
 clid = (2*m+1):(2*m+n);
 cuid = (2*m+n+1):(2*(n+m));
-
+d = [xlower; -xupper; clower; -cupper];
+mu = 0;
 
 % Create outputs struct
 output.iterations = 0;
 output.converged = false;
 output.xk = x;
+output.stepLengths = zeros(0,1);
 output.time_qp = 0;
 output.function_calls = 2;
 
@@ -79,9 +83,53 @@ while (output.iterations < maxiter) && ~output.converged
     end
     zhat = [lambda.lower; lambda.upper; lambda.ineqlin];
     
-    % Update the current point
-    z = z + (zhat-z);
-    x = x + Deltax;
+    %% Do line search for step length  
+    % Set starting alpha at max
+    alpha = 1.0;
+    % Compute reference merit
+    c_alpha = -1*confun(x); 
+    output.function_calls = output.function_calls + 2;
+    c_alpha = [x; -x; c_alpha; -c_alpha]-d;
+    absz = abs(z);
+    mu = max(absz, 0.5*(mu+absz));
+    phi0 = phi(f,mu,c_alpha);
+    dphi0 = dphi(df,Deltax,mu,c_alpha); 
+    % Run til convergence
+    searchingForAlpha = true;
+    while searchingForAlpha
+        % Compute step canditate
+        x_alpha = x + alpha*Deltax;
+        % Compute values for step candidate
+        f_alpha = objfun(x_alpha);       
+        c_alpha = -1*confun(x_alpha);
+        output.function_calls = output.function_calls + 2;
+        c_alpha = [x_alpha; -x_alpha; c_alpha; -c_alpha]-d;
+        % Compute merit of step
+        phi_alpha = phi(f_alpha,mu,c_alpha);
+
+        if phi_alpha <= phi0 + tol_c1*dphi0*alpha
+            % Accept alpha value
+            searchingForAlpha = false;
+        else
+            % Update alpha value
+            alpha_tmp = (phi_alpha-(phi0+alpha*dphi0))/(alpha*alpha);
+            alpha_min = -dphi0/(2*alpha_tmp);
+            alpha = min(0.9*alpha, max(alpha_min, 0.1*alpha));
+        end
+    end
+
+    % Use non monotone update strategy if alpha is very small, and it is
+    % set
+    if all(alpha*Deltax<epsilon) && non_monotone
+        alpha = 1.0;
+    end
+
+    % Save used step length
+    output.stepLengths(output.iterations) = alpha;
+
+    % Update the current point using alpha
+    z = z + alpha*(zhat-z);
+    x = x + alpha*Deltax;
     
     % Save step
     output.xk(:, output.iterations+1) = x;
@@ -90,7 +138,7 @@ while (output.iterations < maxiter) && ~output.converged
     dL = df - z(lid)-z(uid)-dc*z(clid)-dc*z(cuid);
 
     % Compute function values for next iteration
-    [~,df] = objfun(x);
+    [f,df] = objfun(x);
     [c,~,dc,~] = confun(x);
     c = -1*c;
     dc = -1*dc;
@@ -125,7 +173,18 @@ end
 % Warn if not converged
 if ~output.converged
     warning("Max number of iterations reached before convergence")
-
 end
 
+% end of function
+end
 
+% Below is function definitions
+
+% Define merit function
+function [res] = phi(f, mu, c)
+    res = f + mu'*abs(min(0,c));
+end
+% Define derivative of merit function
+function [res] = dphi(df,dx,mu,c)
+    res = df'*dx-mu'*abs(min(0,c));
+end
