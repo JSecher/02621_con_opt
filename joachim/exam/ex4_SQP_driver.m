@@ -5,9 +5,10 @@ close all
 
 runContourPlot_44 = false;
 runSolveTest_45= false;
-runSolveTest_452= true;
+runSolveTest_452= false;
 runBFGS_46 = false;
 runBFGS_LS_47 = false;
+runBFGS_TR_47 = true;
 
 % Import CasADi
 if isfolder('../../casadi-v3.5.5')
@@ -534,6 +535,78 @@ input.tablePlacement = '!ht';
 % Now call the function to generate LaTex code:
 latex = latexTable(input);
 savelatexTable(latex, input.tableLabel, 4);
+
+end
+
+
+
+%% Problem 4.7 - Dampend BFGS with line search 
+if runBFGS_TR_47
+
+clear data
+x0s = [[0.0; 0.0],[1.0; 2.0], [-4.0; 0], [-4; 1]];
+
+fig = figure("Name", "SQP - Trust Region - Himmelblau - Solution for x0s", 'Position', [150, 150, 600, 600]);
+hold on
+% Create contour plot and constraints
+[cfig, conFigs] = contourHimmel(true);
+
+traces = [];
+legens = [];
+for j=1:length(x0s)
+    %sympref('FloatingPointOutput',1);
+    x0 = x0s(:,j);    % Initial point
+    
+    xl = [-5; -5];      % Lower bound for x
+    xu = [5; 5];        % Upper bound for x
+    cl = [0; 0];        % Lower bound for constraints 
+    cu = [47; 70];      % Upper bound for constraints
+    
+    tstart = cputime;
+    [sol_tr, obj, lambda, output] = SQPsolver(@objfungradHimmelblau, ...
+                                                @confungradHimmelblau1, ...
+                                                xl, xu, ...
+                                                cl, cu, ...
+                                                x0, 'trust');
+    t_tr_total = cputime - tstart;
+    
+    
+    % Compare with fmin con
+    options = optimoptions('fmincon',... 
+                           'SpecifyObjectiveGradient',true,... 
+                           'SpecifyConstraintGradient',true,... 
+                           'Display','none',... 
+                           'Algorithm','interior-point');
+    tstart = cputime;
+    [sol_fmin_grad,fval_grad,exitflag_grad,output_grad]=fmincon( ...
+                                            @objfungradHimmelblau, x0, ...
+                                            [], [], [], [], ...
+                                            xl, xu, ...
+                                            @confungradHimmelblau1, ...
+                                            options);
+    time_fmincon_grad = cputime - tstart;
+    
+    fprintf('Found solutions for x0 = [%.2f, %.2f] ::\n', x0(1), x0(2)); 
+    fprintf('\t Trust regionsolution: [%.5e, %.5e], objective: %.5e, time: %.5e, iter: %d\n', sol_tr(1), sol_tr(2), obj, t_tr_total, output.iterations);
+    fprintf('\t fmincon grad solution: [%.5e, %.5e], objective: %.5e, time: %.5e\n', sol_fmin_grad(1), sol_fmin_grad(2), fval_grad, time_fmincon_grad);    
+    fprintf('\t MSE: %.5e\n', mean(sqrt((sol_fmin_grad-sol_tr).^2)));    
+    
+
+    % Add points of interest
+    h = traceIterations(output.xk, "b");
+    intp = plotPoint(x0(1),x0(2), "int");
+    solp_ls = plotPoint(sol_tr(1),sol_tr(2), "sol", "y", 16);
+    % solp_grad = plotPoint(sol_fmin_grad(1),sol_fmin_grad(2), "gen", "g", 8);
+    
+    data(j,:) = [fval_grad, sol_fmin_grad', time_fmincon_grad, nan ...
+                obj, sol_tr', t_tr_total, output.iterations, output.function_calls ...
+                 nan, mean(sqrt((sol_fmin_grad-sol_tr).^2))];
+
+end
+
+legend([intp,solp_ls, h],{'x_0' 'Trust Region sol.', 'Trace of iter.'},'Location','southwest')
+hold off
+savefigpdf(fig, "ex4_6_tr_himmelblau_x0s", 4);
 
 end
 

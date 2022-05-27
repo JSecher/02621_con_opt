@@ -38,7 +38,7 @@ switch solver_match
     case "line"
         [x, lambda, output] = SQPsolverLS(objfun,confun,xlower,xupper,clower,cupper,x0);
     case "trust"
-        error("Trust region is not implemented")
+        [x, lambda, output] = SQPsolverTR(objfun,confun,xlower,xupper,clower,cupper,x0);
     otherwise
         error("Unknown solver choice: '" + solver + "'. Availible options are: 'bfgs', 'line', and 'trust'.")
 end
