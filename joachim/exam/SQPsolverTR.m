@@ -27,7 +27,7 @@ function [x, lambda, output] = SQPsolverTR(objfun,confun,xlower,xupper,clower,cu
 
 % Define constants 
 maxiter = 100;
-epsilon = 1e-9;
+epsilon = 1e-4;
 
 % Allocate storage
 n = length(x0);
@@ -101,8 +101,8 @@ while (output.iterations < maxiter) && ~output.converged
     Deltax = Deltax(1:n);
     
     % Compute new penalty
-    lambda_inf = norm(z, "inf");
-    mu_val = max(0.5*(mu_val+lambda_inf), lambda_inf);
+    z_inf = norm(z, "inf");
+    mu_val = max(0.5*(mu_val+z_inf), z_inf);
     mu = mu_val * ones(nm2, 1);
 
     % Compute actual / predicted ratio
@@ -111,13 +111,12 @@ while (output.iterations < maxiter) && ~output.converged
     dc_full = -1*dc_full;   % Fix sign
     c_full = [x; -x; c_full; -c_full] - penaltyd(1:nm2);
     dc_full = [eye(n), -eye(n), dc_full, -dc_full];
-    
     [c_pred_full] = confun(x);  % predicted con
     c_pred_full = -1*c_pred_full;     % Fix sign
     c_pred_full = [x; -x; c_pred_full; -c_pred_full] - penaltyd(1:nm2);
     
     % Compute predicted 
-    qmu_pred = f + df'*Deltax+0.5*Deltax'*B*Deltax+mu'*max(0,-(c_full+dc_full'*Deltax));
+    qmu_pred = f + df'*Deltax + 0.5*Deltax'*B*Deltax + mu'*max(0,-(c_full+dc_full'*Deltax));
     qmu = f+ mu'*max(0,-(c_full));
     phi1 = qmu;
 
@@ -128,16 +127,22 @@ while (output.iterations < maxiter) && ~output.converged
     gamma = min(max( (2*rho-1)^3 + 1, 0.25), 2);
     
     output.function_calls = output.function_calls + 3;
-    
+    if any(~isfinite(Deltax))
+        disp("Detla x is fucked")
+    end
+    if ~isfinite(rho)
+        disp("rho is fucked")
+    end
+    fprintf("Before: Deltax = [%.6f,%.6f],  rho : %f , mu = %f, tr = %f, gamma = %f, x = [%.5f, %.5f], dl2 = %f\n",Deltax(1), Deltax(2), rho, mu_val, tr, gamma, x(1), x(2),norm(dL2, 'inf'));
     % Adjust trust region accordingly
     if rho > 0    
         % If accepted
         % Update the current point
-        z = z + (zhat-z);
+        z = zhat;
         x = x + Deltax;
         
         % Save step
-        output.xk(:, output.iterations+1) = x;
+        output.xk = [output.xk, x];
         
         % For the quasi Newton update  
         dL = df - z(lid)-z(uid)-dc*z(clid)-dc*z(cuid);
@@ -165,7 +170,7 @@ while (output.iterations < maxiter) && ~output.converged
             theta = 1;
         end
     
-        r = theta*q+(1-theta)*(Bp);
+        r = theta*q+(1-theta)*Bp;
         B = B + r*r'/(Deltax'*r) - Bp*Bp'/pBp;
 
         % Update trust region
@@ -175,7 +180,7 @@ while (output.iterations < maxiter) && ~output.converged
         % Update trust region
         tr = gamma*norm(Deltax,"inf");
     end
-
+    fprintf("After: Deltax = [%.6f,%.6f],  rho : %f , mu = %f, tr = %f, gamma = %f, x = [%.5f, %.5f], dl2 = %f\n",Deltax(1), Deltax(2), rho, mu_val, tr, gamma, x(1), x(2),norm(dL2, 'inf'));
     
     % Check for convergence
     if norm(dL2, 'inf') < epsilon

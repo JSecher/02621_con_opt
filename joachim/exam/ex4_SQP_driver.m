@@ -542,9 +542,9 @@ end
 
 %% Problem 4.7 - Dampend BFGS with line search 
 if runBFGS_TR_47
-
+%[0.0; 0.0], [1.0; 2.0], 
 clear data
-x0s = [[0.0; 0.0],[1.0; 2.0], [-4.0; 0], [-4; 1]];
+x0s = [[-4.0; 0], [-4; 1]];
 
 fig = figure("Name", "SQP - Trust Region - Himmelblau - Solution for x0s", 'Position', [150, 150, 600, 600]);
 hold on
@@ -560,7 +560,7 @@ for j=1:length(x0s)
     xl = [-5; -5];      % Lower bound for x
     xu = [5; 5];        % Upper bound for x
     cl = [0; 0];        % Lower bound for constraints 
-    cu = [47; 70];      % Upper bound for constraints
+    cu = [54; 70];      % Upper bound for constraints
     
     tstart = cputime;
     [sol_tr, obj, lambda, output] = SQPsolver(@objfungradHimmelblau, ...
