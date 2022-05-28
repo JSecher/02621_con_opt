@@ -133,7 +133,7 @@ while (output.iterations < maxiter) && ~output.converged
     if ~isfinite(rho)
         disp("rho is fucked")
     end
-    %fprintf("Before: Deltax = [%.6f,%.6f],  rho : %f , mu = %f, tr = %f, gamma = %f, x = [%.5f, %.5f], dl2 = %f\n",Deltax(1), Deltax(2), rho, mu_val, tr, gamma, x(1), x(2),norm(dL2, 'inf'));
+    fprintf("Before: Deltax = [%.6f,%.6f],  rho : %f , mu = %f, tr = %f, gamma = %f, x = [%.5f, %.5f], dl2 = %f\n",Deltax(1), Deltax(2), rho, mu_val, tr, gamma, x(1), x(2),norm(dL2, 'inf'));
     % Adjust trust region accordingly
     if rho > 0    
         % If accepted

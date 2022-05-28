@@ -6,8 +6,8 @@ close all
 runContourPlot_44 = false;
 runSolveTest_45= false;
 runSolveTest_452= false;
-runBFGS_46 = false;
-runBFGS_LS_47 = false;
+runBFGS_46 = true;
+runBFGS_LS_47 = true;
 runBFGS_TR_47 = true;
 
 % Import CasADi
@@ -331,8 +331,13 @@ end
 
 %% Problem 4.6 - Dampend BFGS
 if runBFGS_46 
-
 clear data
+
+fig = figure("Name", "SQP - BFGS - Himmelblau - Solution for x0s", 'Position', [500, 500, 600, 600]);
+hold on
+% Create contour plot and constraints
+[cfig, conFigs] = contourHimmel(true);
+
 x0s = [[0.0; 0.0],[1.0; 2.0], [-4.0; 0], [-4; 1]];
 
 for j=1:length(x0s)
@@ -372,26 +377,26 @@ for j=1:length(x0s)
     fprintf('\t BFGS solution: [%.5e, %.5e], objective: %.5e, time: %.5e, iter: %d\n', sol_bfgs(1), sol_bfgs(2), obj, t_bfgs_total, output.iterations);
     fprintf('\t fmincon grad solution: [%.5e, %.5e], objective: %.5e, time: %.5e\n', sol_fmin_grad(1), sol_fmin_grad(2), fval_grad, time_fmincon_grad);    
     fprintf('\t MSE: %.5e\n', mean(sqrt((sol_fmin_grad-sol_bfgs).^2)));    
-    
-    fig = figure("Name", sprintf("SQP - BFGS - Himmelblau - Solution for x0=[%+.1f, %+.1f]",x0(1),x0(2)), 'Position', [150, 150, 600, 600]);
-    hold on
-    % Create contour plot and constraints
-    [cfig, conFigs] = contourHimmel(true);
-    
-    % Add points of interest
-    h = traceIterations(output.xk, "b");
-    intp = plotPoint(x0(1),x0(2), "int");
-    solp_bfgs = plotPoint(sol_bfgs(1),sol_bfgs(2), "sol", "y", 16);
-    solp_grad = plotPoint(sol_fmin_grad(1),sol_fmin_grad(2), "gen", "g", 8);
-    legend([intp,solp_grad,solp_bfgs, h],{'x_0', 'fmincon solution', 'SQP BFGS sol.', "Trace for BFGS"},'Location','southwest')
-    hold off
-    savefigpdf(fig, sprintf("ex4_6_bfgs_himmelblau_x0=%+.0f_%+.0f",x0(1),x0(2)), 4);
-
+        
     data(j,:) = [fval_grad, sol_fmin_grad', time_fmincon_grad, nan ...
         obj, sol_bfgs', t_bfgs_total, output.iterations, output.function_calls ...
                  nan, mean(sqrt((sol_fmin_grad-sol_bfgs).^2))];
 
+
+    % Add points of interest
+    h = traceIterations(output.xk, "b");
+    intp = plotPoint(x0(1),x0(2), "int");
+    solp_bfgs = plotPoint(sol_bfgs(1),sol_bfgs(2), "sol", "y", 16);
+    %solp_grad = plotPoint(sol_fmin_grad(1),sol_fmin_grad(2), "gen", "g", 8);
+
 end
+
+
+legend([intp,solp_bfgs, h],{'x_0' 'SQP BFGS sol.', 'Trace of iter.'},'Location','southwest')
+hold off
+savefigpdf(fig, "ex4_6_ls_himmelblau_x0s", 4);
+
+
 
 input.data = data';
 % Set column labels (use empty string for no label):
@@ -407,7 +412,7 @@ input.tableRowLabels = {'$f(x)_{\textit{fmincom}} =$', ...
                         '', ...
                         '$\text{time}_{\textit{SQP BFGS}}\, [s] =$', ...
                         '$\text{Interations}_{\textit{SQP BFGS}}\, =$', ...
-                        '$\text{Function Calls}_{\textit{SQP BFGS}}\, =$'
+                        '$\text{Function Calls}_{\textit{SQP BFGS}}\, =$', ...
                         '', ...
                         'MSE = '};
                         
@@ -509,12 +514,12 @@ input.tableRowLabels = {'$f(x)_{\textit{fmincom}} =$', ...
                         '', ...
                         '$\text{time}_{\textit{fmincom}}\, [s] =$', ...
                         '', ...
-                        '$f(x)_{\textit{SQP LS}} =$', ...
-                        '$x_{\textit{SQP LS}} =$', ...
+                        '$f(x)_{\textit{Line Search}} =$', ...
+                        '$x_{\textit{Line Search}} =$', ...
                         '', ...
-                        '$\text{time}_{\textit{SQP LS}}\, [s] =$', ...
-                        '$\text{Interations}_{\textit{SQP LS}}\, =$', ...
-                        '$\text{Function Calls}_{\textit{SQP LS}}\, =$',...
+                        '$\text{time}_{\textit{Line Search}}\, [s] =$', ...
+                        '$\text{Interations}_{\textit{Line Search}}\, =$', ...
+                        '$\text{Function Calls}_{\textit{Line Search}}\, =$',...
                         '', ...
                         'MSE = '};
                         
@@ -612,6 +617,41 @@ legend([intp,solp_ls, h],{'x_0' 'Trust Region sol.', 'Trace of iter.'},'Location
 hold off
 savefigpdf(fig, "ex4_6_tr_himmelblau_x0s", 4);
 
+input.data = data';
+% Set column labels (use empty string for no label):
+input.tableColLabels = sprintfc("$x_0=[%.1f, %.1f]$", x0s')';
+% Set row labels (use empty string for no label):
+input.tableRowLabels = {'$f(x)_{\textit{fmincom}} =$', ...
+                        '$x_{\textit{fmincom}} = $', ...
+                        '', ...
+                        '$\text{time}_{\textit{fmincom}}\, [s] =$', ...
+                        '', ...
+                        '$f(x)_{\textit{Trust Region}} =$', ...
+                        '$x_{\textit{Trust Region}} =$', ...
+                        '', ...
+                        '$\text{time}_{\textit{Trust Region}}\, [s] =$', ...
+                        '$\text{Interations}_{\textit{Trust Region}}\, =$', ...
+                        '$\text{Function Calls}_{\textit{Trust Region}}\, =$',...
+                        '', ...
+                        'MSE = '};
+                        
+% Set the row format of the data values 
+input.dataFormatMode = 'row';
+input.dataFormat = {'%.5f', 9, "%d", 2, "%.5e",2};
+% Column alignment ('l'=left-justified, 'c'=centered,'r'=right-justified):
+input.tableColumnAlignment = 'r';
+% Switch table borders on/off:
+input.booktabs = 1;
+% LaTex table caption:
+input.tableCaption = sprintf('Comparison of found solution of SQP Trust Region and \\textit{fmincon} for different inital points for the Himmelblau test problem.');
+% LaTex table label:
+input.tableLabel = 'ex4_tr_himmel';
+input.makeCompleteLatexDocument = 0;
+input.dataNanString = '';
+input.tablePlacement = '!ht';
+% Now call the function to generate LaTex code:
+latex = latexTable(input);
+savelatexTable(latex, input.tableLabel, 4);
 end
 
 %% Function definition 
@@ -750,42 +790,5 @@ function [h] = traceIterations(xks, color, linetype)
     Nvals = size(xks, 2);
     plot(xks(1,[1, Nvals]),xks(2,[1,Nvals]),"MarkerFaceColor", color,'markersize',8,'LineStyle', 'none' );
     h = plot(xks(1,:),xks(2,:),spec,'linewidth',2,'MarkerSize',5);
-end
-
-
-% Extra
-%% objective, constraints, derivitives and plotting functions
-function [f,df] = objHimmel(x)
-x1 = x(1);
-x2 = x(2);
-temp1 = x1^2+x2-11;
-temp2 = x1+x2^2-7;
-f = temp1^2+temp2^2;
-df = zeros(2,1);
-df(1) = 4*x1*temp1+2*temp2;
-df(2) = 2*temp1+4*x2*temp2;
-end
-
-function [c,dc] = consHimmel(x,full,d)
-    if nargin<2
-        full = false;
-        d = 0;
-    end
-    x1 = x(1);
-    x2 = x(2);
-    c = zeros(2,1);
-    c(1) = (x1+2)^2-x2;
-    c(2) = -4*x1+10*x2;
-    dc = zeros(2,2);
-    dc(1,1) = 2*x1+4;
-    dc(1,2) = -1;
-    dc(2,1) = -4;
-    dc(2,2) = 10;
-    dc = dc';
-    if full
-        c = [x; -x; c; -c];     
-        c = c-d;
-        dc = [eye(2) -eye(2) dc -dc];
-    end
 end
 
