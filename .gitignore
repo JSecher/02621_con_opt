@@ -1,6 +1,6 @@
 # Ignore Pycharm stuff
 .idea/
-
+joachim/*/*_playground.*
 # Ignore casadi folder
 *casadi*/
 
@@ -161,3 +161,4 @@ joachim/exam/opg2_qp_comparison_driver_playground.m
 joachim/exam/opg3_lp_comparison_driver_playground.m
 joachim/exam/primalDualInteriorMethod_box.m
 joachim/exam/him_playground.mw
+joachim/exam/LinearPDIM_box_playground.m

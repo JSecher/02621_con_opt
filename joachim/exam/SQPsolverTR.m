@@ -107,13 +107,13 @@ while (output.iterations < maxiter) && ~output.converged
 
     % Compute actual / predicted ratio
     [c_full,~,dc_full,~] = confun(x);  % Current con
-    c_full = -1*c_full;     % Fix sign
-    dc_full = -1*dc_full;   % Fix sign
     c_full = [x; -x; c_full; -c_full] - penaltyd(1:nm2);
     dc_full = [eye(n), -eye(n), dc_full, -dc_full];
-    [c_pred_full] = confun(x);  % predicted con
-    c_pred_full = -1*c_pred_full;     % Fix sign
+    c_full = -1*c_full;     % Fix sign
+    dc_full = -1*dc_full;   % Fix sign
+    [c_pred_full] = confun(x+Deltax);  % predicted con
     c_pred_full = [x; -x; c_pred_full; -c_pred_full] - penaltyd(1:nm2);
+    c_pred_full = -1*c_pred_full;     % Fix sign
     
     % Compute predicted 
     qmu_pred = f + df'*Deltax + 0.5*Deltax'*B*Deltax + mu'*max(0,-(c_full+dc_full'*Deltax));
@@ -133,7 +133,7 @@ while (output.iterations < maxiter) && ~output.converged
     if ~isfinite(rho)
         disp("rho is fucked")
     end
-    fprintf("Before: Deltax = [%.6f,%.6f],  rho : %f , mu = %f, tr = %f, gamma = %f, x = [%.5f, %.5f], dl2 = %f\n",Deltax(1), Deltax(2), rho, mu_val, tr, gamma, x(1), x(2),norm(dL2, 'inf'));
+    %fprintf("Before: Deltax = [%.6f,%.6f],  rho : %f , mu = %f, tr = %f, gamma = %f, x = [%.5f, %.5f], dl2 = %f\n",Deltax(1), Deltax(2), rho, mu_val, tr, gamma, x(1), x(2),norm(dL2, 'inf'));
     % Adjust trust region accordingly
     if rho > 0    
         % If accepted
@@ -180,7 +180,7 @@ while (output.iterations < maxiter) && ~output.converged
         % Update trust region
         tr = gamma*norm(Deltax,"inf");
     end
-    fprintf("After: Deltax = [%.6f,%.6f],  rho : %f , mu = %f, tr = %f, gamma = %f, x = [%.5f, %.5f], dl2 = %f\n",Deltax(1), Deltax(2), rho, mu_val, tr, gamma, x(1), x(2),norm(dL2, 'inf'));
+    %fprintf("After: Deltax = [%.6f,%.6f],  rho : %f , mu = %f, tr = %f, gamma = %f, x = [%.5f, %.5f], dl2 = %f\n",Deltax(1), Deltax(2), rho, mu_val, tr, gamma, x(1), x(2),norm(dL2, 'inf'));
     
     % Check for convergence
     if norm(dL2, 'inf') < epsilon

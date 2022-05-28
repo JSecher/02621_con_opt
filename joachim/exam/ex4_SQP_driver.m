@@ -544,7 +544,7 @@ end
 if runBFGS_TR_47
 %[0.0; 0.0], [1.0; 2.0], 
 clear data
-x0s = [[-4.0; 0], [-4; 1]];
+x0s = [[0.0; 0.0], [1.0; 2.0],[-4.0; 0], [-4; 1]];
 
 fig = figure("Name", "SQP - Trust Region - Himmelblau - Solution for x0s", 'Position', [150, 150, 600, 600]);
 hold on
@@ -568,8 +568,11 @@ for j=1:length(x0s)
                                                 xl, xu, ...
                                                 cl, cu, ...
                                                 x0, 'trust');
+
+    %[sol_tr,z,Hist, output] = SQP_trust_playground(x0,@objHimmel,@consHimmel,xl,xu,cl,cu,true,9,0.5, 1000);
     t_tr_total = cputime - tstart;
-    
+    %disp(Hist.Iterations)
+    %obj = objfungradHimmelblau(sol_tr);
     
     % Compare with fmin con
     options = optimoptions('fmincon',... 
@@ -584,6 +587,7 @@ for j=1:length(x0s)
                                             xl, xu, ...
                                             @confungradHimmelblau1, ...
                                             options);
+  
     time_fmincon_grad = cputime - tstart;
     
     fprintf('Found solutions for x0 = [%.2f, %.2f] ::\n', x0(1), x0(2)); 
@@ -747,3 +751,41 @@ function [h] = traceIterations(xks, color, linetype)
     plot(xks(1,[1, Nvals]),xks(2,[1,Nvals]),"MarkerFaceColor", color,'markersize',8,'LineStyle', 'none' );
     h = plot(xks(1,:),xks(2,:),spec,'linewidth',2,'MarkerSize',5);
 end
+
+
+% Extra
+%% objective, constraints, derivitives and plotting functions
+function [f,df] = objHimmel(x)
+x1 = x(1);
+x2 = x(2);
+temp1 = x1^2+x2-11;
+temp2 = x1+x2^2-7;
+f = temp1^2+temp2^2;
+df = zeros(2,1);
+df(1) = 4*x1*temp1+2*temp2;
+df(2) = 2*temp1+4*x2*temp2;
+end
+
+function [c,dc] = consHimmel(x,full,d)
+    if nargin<2
+        full = false;
+        d = 0;
+    end
+    x1 = x(1);
+    x2 = x(2);
+    c = zeros(2,1);
+    c(1) = (x1+2)^2-x2;
+    c(2) = -4*x1+10*x2;
+    dc = zeros(2,2);
+    dc(1,1) = 2*x1+4;
+    dc(1,2) = -1;
+    dc(2,1) = -4;
+    dc(2,2) = 10;
+    dc = dc';
+    if full
+        c = [x; -x; c; -c];     
+        c = c-d;
+        dc = [eye(2) -eye(2) dc -dc];
+    end
+end
+
