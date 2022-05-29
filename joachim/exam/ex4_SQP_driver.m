@@ -5,10 +5,10 @@ close all
 
 runContourPlot_44 = false;
 runSolveTest_45= false;
-runSolveTest_452= false;
+runSolveTest_452= true;
 runBFGS_46 = false;
 runBFGS_LS_47 = false;
-runBFGS_TR_47 = true;
+runBFGS_TR_47 = false;
 
 
 % Import CasADi
@@ -190,7 +190,7 @@ if runSolveTest_452
 disp("Solving Rosenbrock Test problem using fmincon and Casadi");
 
 % Select constraint for rosenbrok, 1 = circle, 2 = box
-con_case = 1;
+con_case = 2;
 
 switch con_case
     case 1
