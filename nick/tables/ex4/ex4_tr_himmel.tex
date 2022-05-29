@@ -1,0 +1,19 @@
+\begin{table}[!ht]
+\centering
+\begin{tabular}{rrrrr}
+\toprule
+ & $x_0=[0.0, 0.0]$ & $x_0=[1.0, 2.0]$ & $x_0=[-4.0, 0.0]$ & $x_0=[-4.0, 1.0]$ \\
+\midrule
+$f(x)=$ & 0.00000 & 0.00000 & 72.85554 & 35.92985 \\
+$x =$ & 3.00000 & 3.00000 & -3.54854 & -3.65461 \\
+ & 2.00000 & 2.00000 & -1.41941 & 2.73772 \\
+time [s] $=$ & 0.21875 & 0.07813 & 0.15625 & 0.07813 \\
+$\text{Interations}\; =$ & 15 & 10 & 12 & 10 \\
+$\text{Function Calls}\, =$ & 75 & 52 & 62 & 52 \\
+ &  &  &  &  \\
+MSE $=$ & 8.14034e-08 & 9.47010e-08 & 4.55653e-07 & 6.07311e-09 \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of found solution of SQP using Trust Region and \textit{fmincon} for different initial points for the Himmelblau test problem.}
+\label{table:ex4_tr_himmel}
+\end{table}

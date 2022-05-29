@@ -1,0 +1,22 @@
+\begin{table}[!ht]
+\centering
+\begin{tabular}{rrrr}
+\toprule
+ & $x_0=[0.0, 0.0]$ & $x_0=[-0.5, 0.0]$ & $x_0=[-0.5, -0.5]$ \\
+\midrule
+$f(x)_{\textit{fmincom}} =$ & 0.0457 & 0.0457 & 0.0457 \\
+$x_{\textit{fmincom}} = $ & 0.7864 & 0.7864 & 0.7864 \\
+ & 0.6177 & 0.6177 & 0.6177 \\
+$\text{time}_{\textit{fmincom}}\, [s] =$ & 0.0781 & 0.1563 & 0.1094 \\
+ &  &  &  \\
+$f(x)_{\textit{CasADi}} =$ & 0.0457 & 0.0457 & 0.0457 \\
+$x_{\textit{CasADi}} = $ & 0.7864 & 0.7864 & 0.7864 \\
+ & 0.6177 & 0.6177 & 0.6177 \\
+$\text{time}_{\textit{CasADi}}\, [s] =$ & 0.5938 & 0.1094 & 0.2031 \\
+ &  &  &  \\
+Mean Squared Difference =  & 0.0000 & 0.0000 & 0.0000 \\
+\bottomrule
+\end{tabular}
+\caption{Found solution for different inital points for the Rosenbrock test problem with circle constraint .}
+\label{table:ex4_solve_test_rosen_circle}
+\end{table}

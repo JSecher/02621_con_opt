@@ -2,7 +2,9 @@
 %% Clean up
 clear
 close all
+clc
 
+<<<<<<< Updated upstream
 runContourPlot_44 = false;
 runSolveTest_45= false;
 runSolveTest_452= true;
@@ -10,12 +12,26 @@ runBFGS_46 = false;
 runBFGS_LS_47 = false;
 runBFGS_TR_47 = false;
 
+=======
+runContourPlot_44 = true;
+runSolveTest_45= true;
+runSolveTest_452= false;
+runBFGS_46 = true;
+runBFGS_LS_47 = true;
+runBFGS_TR_47 = true;
+>>>>>>> Stashed changes
 
 % Import CasADi
 if isfolder('../../casadi-v3.5.5')
     addpath('../../casadi-v3.5.5')
 elseif isfolder('../../../casadi-v3.5.5')
+<<<<<<< Updated upstream
     addpath('../../../casadi-v3.5.5')
+=======
+    addpath('../../../casadi-v3.5.5')  
+elseif isfolder('C:\Program Files\casadi-windows-matlabR2016a-v3.5.5\casadi')
+    addpath('C:\Program Files\casadi-windows-matlabR2016a-v3.5.5\casadi')
+>>>>>>> Stashed changes
 else
     error("Can not find casadi")
 end
@@ -190,7 +206,11 @@ if runSolveTest_452
 disp("Solving Rosenbrock Test problem using fmincon and Casadi");
 
 % Select constraint for rosenbrok, 1 = circle, 2 = box
+<<<<<<< Updated upstream
 con_case = 2;
+=======
+con_case = 1;
+>>>>>>> Stashed changes
 
 switch con_case
     case 1
@@ -389,6 +409,7 @@ for j=1:length(x0s)
     intp = plotPoint(x0(1),x0(2), "int");
     solp_bfgs = plotPoint(sol_bfgs(1),sol_bfgs(2), "sol", "y", 16);
     %solp_grad = plotPoint(sol_fmin_grad(1),sol_fmin_grad(2), "gen", "g", 8);
+<<<<<<< Updated upstream
 
 end
 
@@ -499,13 +520,196 @@ end
 legend([intp,solp_ls, h],{'x_0' 'Line Search sol.', 'Trace of iter.'},'Location','southwest')
 hold off
 savefigpdf(fig, "ex4_6_ls_himmelblau_x0s", 4);
+=======
+
+end
+
+
+legend([intp,solp_bfgs, h],{'x_0' 'Plain BFGS sol.', 'Trace of iter.'},'Location','southwest')
+hold off
+savefigpdf(fig, "ex4_6_bfgs_himmelblau_x0s", 4);
+
+>>>>>>> Stashed changes
 
 
 input.data = data';
 % Set column labels (use empty string for no label):
 input.tableColLabels = sprintfc("$x_0=[%.1f, %.1f]$", x0s')';
 % Set row labels (use empty string for no label):
+<<<<<<< Updated upstream
 input.tableRowLabels = {'f(x) =',...
+=======
+input.tableRowLabels ={'$f(x)=$', ...
+>>>>>>> Stashed changes
+                        '$x =$', ...
+                        '', ...
+                        'time [s] $=$', ...
+                        '$\text{Interations}\; =$', ...
+                        '$\text{Function Calls}\, =$', ...
+                        '', ...
+                        'MSE $=$'};
+                        
+<<<<<<< Updated upstream
+                        
+=======
+>>>>>>> Stashed changes
+% Set the row format of the data values 
+input.dataFormatMode = 'row';
+input.dataFormat = {'%.5f', 4, "%d", 2, "%.5e",2};
+% Column alignment ('l'=left-justified, 'c'=centered,'r'=right-justified):
+input.tableColumnAlignment = 'r';
+% Switch table borders on/off:
+input.booktabs = 1;
+% LaTex table caption:
+<<<<<<< Updated upstream
+input.tableCaption = sprintf('Comparison of found solution of SQP using Line Search and \\textit{fmincon} for different initial points for the Himmelblau test problem.');
+% LaTex table label:
+input.tableLabel = 'ex4_ls_himmel';
+=======
+input.tableCaption = sprintf('Results for plain SQP using BFGS for different initial points for the Himmelblau test problem. MSE is compared to solution found by \\textit{fmincon}.');
+% LaTex table label:
+input.tableLabel = 'ex4_bfgs_himmel';
+>>>>>>> Stashed changes
+input.makeCompleteLatexDocument = 0;
+input.dataNanString = '';
+input.tablePlacement = '!ht';
+% Now call the function to generate LaTex code:
+latex = latexTable(input);
+savelatexTable(latex, input.tableLabel, 4);
+
+end
+
+<<<<<<< Updated upstream
+
+
+%% Problem 4.7 - Dampend BFGS with TRUST REGION
+if runBFGS_TR_47
+%[0.0; 0.0], [1.0; 2.0], 
+clear data
+x0s = [[0.0; 0.0], [1.0; 2.0],[-4.0; 0], [-4; 1]];
+
+fig = figure("Name", "SQP - Trust Region - Himmelblau - Solution for x0s", 'Position', [150, 150, 600, 600]);
+=======
+%% Problem 4.7 - Dampend BFGS with line search 
+if runBFGS_LS_47
+
+clear data
+x0s = [[0.0; 0.0],[1.0; 2.0], [-4.0; 0], [-4; 1]];
+
+fig = figure("Name", "SQP - Line Search - Himmelblau - Solution for x0s", 'Position', [150, 150, 600, 600]);
+>>>>>>> Stashed changes
+hold on
+% Create contour plot and constraints
+[cfig, conFigs] = contourHimmel(true);
+
+traces = [];
+legens = [];
+for j=1:length(x0s)
+    %sympref('FloatingPointOutput',1);
+    x0 = x0s(:,j);    % Initial point
+    
+    xl = [-5; -5];      % Lower bound for x
+    xu = [5; 5];        % Upper bound for x
+    cl = [0; 0];        % Lower bound for constraints 
+<<<<<<< Updated upstream
+    cu = [54; 70];      % Upper bound for constraints
+    
+    tstart = cputime;
+    [sol_tr, obj, lambda, output] = SQPsolver(@objfungradHimmelblau, ...
+                                                @confungradHimmelblau1, ...
+                                                xl, xu, ...
+                                                cl, cu, ...
+                                                x0, 'trust');
+
+    %[sol_tr,z,Hist, output] = SQP_trust_playground(x0,@objHimmel,@consHimmel,xl,xu,cl,cu,true,9,0.5, 1000);
+    t_tr_total = cputime - tstart;
+    %disp(Hist.Iterations)
+    %obj = objfungradHimmelblau(sol_tr);
+=======
+    cu = [47; 70];      % Upper bound for constraints
+    
+    tstart = cputime;
+    [sol_ls, obj, lambda, output] = SQPsolver(@objfungradHimmelblau, ...
+                                                @confungradHimmelblau1, ...
+                                                xl, xu, ...
+                                                cl, cu, ...
+                                                x0, 'line');
+    t_ls_total = cputime - tstart;
+    
+>>>>>>> Stashed changes
+    
+    % Compare with fmin con
+    options = optimoptions('fmincon',... 
+                           'SpecifyObjectiveGradient',true,... 
+                           'SpecifyConstraintGradient',true,... 
+                           'Display','none',... 
+                           'Algorithm','interior-point');
+    tstart = cputime;
+    [sol_fmin_grad,fval_grad,exitflag_grad,output_grad]=fmincon( ...
+                                            @objfungradHimmelblau, x0, ...
+                                            [], [], [], [], ...
+                                            xl, xu, ...
+                                            @confungradHimmelblau1, ...
+                                            options);
+<<<<<<< Updated upstream
+  
+    time_fmincon_grad = cputime - tstart;
+    
+    fprintf('Found solutions for x0 = [%.2f, %.2f] ::\n', x0(1), x0(2)); 
+    fprintf('\t Trust regionsolution: [%.5e, %.5e], objective: %.5e, time: %.5e, iter: %d\n', sol_tr(1), sol_tr(2), obj, t_tr_total, output.iterations);
+    fprintf('\t fmincon grad solution: [%.5e, %.5e], objective: %.5e, time: %.5e\n', sol_fmin_grad(1), sol_fmin_grad(2), fval_grad, time_fmincon_grad);    
+    fprintf('\t MSE: %.5e\n', mean(sqrt((sol_fmin_grad-sol_tr).^2)));    
+=======
+    time_fmincon_grad = cputime - tstart;
+    
+    fprintf('Found solutions for x0 = [%.2f, %.2f] ::\n', x0(1), x0(2)); 
+    fprintf('\t Line Search solution: [%.5e, %.5e], objective: %.5e, time: %.5e, iter: %d\n', sol_ls(1), sol_ls(2), obj, t_ls_total, output.iterations);
+    fprintf('\t fmincon grad solution: [%.5e, %.5e], objective: %.5e, time: %.5e\n', sol_fmin_grad(1), sol_fmin_grad(2), fval_grad, time_fmincon_grad);    
+    fprintf('\t MSE: %.5e\n', mean(sqrt((sol_fmin_grad-sol_ls).^2)));    
+>>>>>>> Stashed changes
+    
+
+    % Add points of interest
+    h = traceIterations(output.xk, "b");
+    intp = plotPoint(x0(1),x0(2), "int");
+<<<<<<< Updated upstream
+    solp_ls = plotPoint(sol_tr(1),sol_tr(2), "sol", "y", 16);
+    % solp_grad = plotPoint(sol_fmin_grad(1),sol_fmin_grad(2), "gen", "g", 8);
+    
+    %data(j,:) = [fval_grad, sol_fmin_grad', time_fmincon_grad, nan ...
+    data(j,:) = [ obj, sol_tr', t_tr_total, output.iterations, output.function_calls ...
+                 nan, mean(sqrt((sol_fmin_grad-sol_tr).^2))];
+
+end
+
+legend([intp,solp_ls, h],{'x_0' 'Trust Region sol.', 'Trace of iter.'},'Location','southwest')
+hold off
+savefigpdf(fig, "ex4_6_tr_himmelblau_x0s", 4);
+=======
+    solp_ls = plotPoint(sol_ls(1),sol_ls(2), "sol", "y", 16);
+    % solp_grad = plotPoint(sol_fmin_grad(1),sol_fmin_grad(2), "gen", "g", 8);
+    
+    %data(j,:) = [fval_grad, sol_fmin_grad', time_fmincon_grad, nan ...
+    data(j,:)  =[obj, sol_ls', t_ls_total, output.iterations, output.function_calls ...
+                 nan, mean(sqrt((sol_fmin_grad-sol_ls).^2))];
+
+end
+
+legend([intp,solp_ls, h],{'x_0' 'Line Search sol.', 'Trace of iter.'},'Location','southwest')
+hold off
+savefigpdf(fig, "ex4_6_ls_himmelblau_x0s", 4);
+
+>>>>>>> Stashed changes
+
+input.data = data';
+% Set column labels (use empty string for no label):
+input.tableColLabels = sprintfc("$x_0=[%.1f, %.1f]$", x0s')';
+% Set row labels (use empty string for no label):
+<<<<<<< Updated upstream
+input.tableRowLabels ={'$f(x)=$', ...
+=======
+input.tableRowLabels = {'f(x) =',...
+>>>>>>> Stashed changes
                         '$x =$', ...
                         '', ...
                         'time [s] $=$', ...
@@ -523,21 +727,95 @@ input.tableColumnAlignment = 'r';
 % Switch table borders on/off:
 input.booktabs = 1;
 % LaTex table caption:
+<<<<<<< Updated upstream
+input.tableCaption = sprintf('Comparison of found solution of SQP using Trust Region and \\textit{fmincon} for different initial points for the Himmelblau test problem.');
+% LaTex table label:
+input.tableLabel = 'ex4_tr_himmel';
+=======
 input.tableCaption = sprintf('Comparison of found solution of SQP using Line Search and \\textit{fmincon} for different initial points for the Himmelblau test problem.');
 % LaTex table label:
 input.tableLabel = 'ex4_ls_himmel';
+>>>>>>> Stashed changes
 input.makeCompleteLatexDocument = 0;
 input.dataNanString = '';
 input.tablePlacement = '!ht';
 % Now call the function to generate LaTex code:
 latex = latexTable(input);
 savelatexTable(latex, input.tableLabel, 4);
-
 end
 
 
+%[0.0; 0.0], [1.0; 2.0], 
+clear data
+x0s = [[0.0; 0.0], [1.0; 2.0],[-4.0; 0], [-4; 1]];
 
-%% Problem 4.7 - Dampend BFGS with TRUST REGION
+fig = figure("Name", "SQP - Trust Region - Himmelblau - Solution for x0s", 'Position', [150, 150, 600, 600]);
+hold on
+% Create contour plot and constraints
+[cfig, conFigs] = contourHimmel(true);
+
+traces = [];
+legens = [];
+for j=1:length(x0s)
+    %sympref('FloatingPointOutput',1);
+    x0 = x0s(:,j);    % Initial point
+    
+    xl = [-5; -5];      % Lower bound for x
+    xu = [5; 5];        % Upper bound for x
+    cl = [0; 0];        % Lower bound for constraints 
+    cu = [54; 70];      % Upper bound for constraints
+    
+    tstart = cputime;
+    [sol_tr, obj, lambda, output] = SQPsolver(@objfungradHimmelblau, ...
+                                                @confungradHimmelblau1, ...
+                                                xl, xu, ...
+                                                cl, cu, ...
+                                                x0, 'trust');
+
+    %[sol_tr,z,Hist, output] = SQP_trust_playground(x0,@objHimmel,@consHimmel,xl,xu,cl,cu,true,9,0.5, 1000);
+    t_tr_total = cputime - tstart;
+    %disp(Hist.Iterations)
+    %obj = objfungradHimmelblau(sol_tr);
+    
+    % Compare with fmin con
+    options = optimoptions('fmincon',... 
+                           'SpecifyObjectiveGradient',true,... 
+                           'SpecifyConstraintGradient',true,... 
+                           'Display','none',... 
+                           'Algorithm','interior-point');
+    tstart = cputime;
+    [sol_fmin_grad,fval_grad,exitflag_grad,output_grad]=fmincon( ...
+                                            @objfungradHimmelblau, x0, ...
+                                            [], [], [], [], ...
+                                            xl, xu, ...
+                                            @confungradHimmelblau1, ...
+                                            options);
+  
+    time_fmincon_grad = cputime - tstart;
+    
+    fprintf('Found solutions for x0 = [%.2f, %.2f] ::\n', x0(1), x0(2)); 
+    fprintf('\t Trust regionsolution: [%.5e, %.5e], objective: %.5e, time: %.5e, iter: %d\n', sol_tr(1), sol_tr(2), obj, t_tr_total, output.iterations);
+    fprintf('\t fmincon grad solution: [%.5e, %.5e], objective: %.5e, time: %.5e\n', sol_fmin_grad(1), sol_fmin_grad(2), fval_grad, time_fmincon_grad);    
+    fprintf('\t MSE: %.5e\n', mean(sqrt((sol_fmin_grad-sol_tr).^2)));    
+    
+
+    % Add points of interest
+    h = traceIterations(output.xk, "b");
+    intp = plotPoint(x0(1),x0(2), "int");
+    solp_ls = plotPoint(sol_tr(1),sol_tr(2), "sol", "y", 16);
+    % solp_grad = plotPoint(sol_fmin_grad(1),sol_fmin_grad(2), "gen", "g", 8);
+    
+    %data(j,:) = [fval_grad, sol_fmin_grad', time_fmincon_grad, nan ...
+    data(j,:) = [ obj, sol_tr', t_tr_total, output.iterations, output.function_calls ...
+                 nan, mean(sqrt((sol_fmin_grad-sol_tr).^2))];
+
+end
+
+<<<<<<< Updated upstream
+=======
+
+
+%% Problem 4.7 - Dampend BFGS with line search 
 if runBFGS_TR_47
 %[0.0; 0.0], [1.0; 2.0], 
 clear data
@@ -605,10 +883,13 @@ for j=1:length(x0s)
 
 end
 
+>>>>>>> Stashed changes
 legend([intp,solp_ls, h],{'x_0' 'Trust Region sol.', 'Trace of iter.'},'Location','southwest')
 hold off
 savefigpdf(fig, "ex4_6_tr_himmelblau_x0s", 4);
 
+<<<<<<< Updated upstream
+=======
 input.data = data';
 % Set column labels (use empty string for no label):
 input.tableColLabels = sprintfc("$x_0=[%.1f, %.1f]$", x0s')';
@@ -642,77 +923,7 @@ latex = latexTable(input);
 savelatexTable(latex, input.tableLabel, 4);
 end
 
-
-%[0.0; 0.0], [1.0; 2.0], 
-clear data
-x0s = [[0.0; 0.0], [1.0; 2.0],[-4.0; 0], [-4; 1]];
-
-fig = figure("Name", "SQP - Trust Region - Himmelblau - Solution for x0s", 'Position', [150, 150, 600, 600]);
-hold on
-% Create contour plot and constraints
-[cfig, conFigs] = contourHimmel(true);
-
-traces = [];
-legens = [];
-for j=1:length(x0s)
-    %sympref('FloatingPointOutput',1);
-    x0 = x0s(:,j);    % Initial point
-    
-    xl = [-5; -5];      % Lower bound for x
-    xu = [5; 5];        % Upper bound for x
-    cl = [0; 0];        % Lower bound for constraints 
-    cu = [54; 70];      % Upper bound for constraints
-    
-    tstart = cputime;
-    [sol_tr, obj, lambda, output] = SQPsolver(@objfungradHimmelblau, ...
-                                                @confungradHimmelblau1, ...
-                                                xl, xu, ...
-                                                cl, cu, ...
-                                                x0, 'trust');
-
-    %[sol_tr,z,Hist, output] = SQP_trust_playground(x0,@objHimmel,@consHimmel,xl,xu,cl,cu,true,9,0.5, 1000);
-    t_tr_total = cputime - tstart;
-    %disp(Hist.Iterations)
-    %obj = objfungradHimmelblau(sol_tr);
-    
-    % Compare with fmin con
-    options = optimoptions('fmincon',... 
-                           'SpecifyObjectiveGradient',true,... 
-                           'SpecifyConstraintGradient',true,... 
-                           'Display','none',... 
-                           'Algorithm','interior-point');
-    tstart = cputime;
-    [sol_fmin_grad,fval_grad,exitflag_grad,output_grad]=fmincon( ...
-                                            @objfungradHimmelblau, x0, ...
-                                            [], [], [], [], ...
-                                            xl, xu, ...
-                                            @confungradHimmelblau1, ...
-                                            options);
-  
-    time_fmincon_grad = cputime - tstart;
-    
-    fprintf('Found solutions for x0 = [%.2f, %.2f] ::\n', x0(1), x0(2)); 
-    fprintf('\t Trust regionsolution: [%.5e, %.5e], objective: %.5e, time: %.5e, iter: %d\n', sol_tr(1), sol_tr(2), obj, t_tr_total, output.iterations);
-    fprintf('\t fmincon grad solution: [%.5e, %.5e], objective: %.5e, time: %.5e\n', sol_fmin_grad(1), sol_fmin_grad(2), fval_grad, time_fmincon_grad);    
-    fprintf('\t MSE: %.5e\n', mean(sqrt((sol_fmin_grad-sol_tr).^2)));    
-    
-
-    % Add points of interest
-    h = traceIterations(output.xk, "b");
-    intp = plotPoint(x0(1),x0(2), "int");
-    solp_ls = plotPoint(sol_tr(1),sol_tr(2), "sol", "y", 16);
-    % solp_grad = plotPoint(sol_fmin_grad(1),sol_fmin_grad(2), "gen", "g", 8);
-    
-    %data(j,:) = [fval_grad, sol_fmin_grad', time_fmincon_grad, nan ...
-    data(j,:) = [ obj, sol_tr', t_tr_total, output.iterations, output.function_calls ...
-                 nan, mean(sqrt((sol_fmin_grad-sol_tr).^2))];
-
-end
-
-legend([intp,solp_ls, h],{'x_0' 'Trust Region sol.', 'Trace of iter.'},'Location','southwest')
-hold off
-savefigpdf(fig, "ex4_6_tr_himmelblau_x0s", 4);
-
+>>>>>>> Stashed changes
 %% Function definition 
 
 function f = objfunHimmelblau(x,p)

@@ -1,0 +1,25 @@
+\begin{table}[!ht]
+\centering
+\begin{tabular}{rrrr}
+\toprule
+ & $x_0=[0.0, 0.0]$ & $x_0=[-4.0, 0.0]$ & $x_0=[-4.0, 1.0]$ \\
+\midrule
+$f(x)_{\textit{fmincom}} =$ & 0.00000 & 72.85555 & 35.92985 \\
+$x_{\textit{fmincom}} = $ & 3.00000 & -3.54854 & -3.65461 \\
+ & 2.00000 & -1.41941 & 2.73772 \\
+$\text{time}_{\textit{fmincom}}\, [s] =$ & 0.03125 & 0.01563 & 0.01563 \\
+ &  &  &  \\
+$f(x)_{\textit{fmincom grad}} =$ & 0.00000 & 72.85555 & 35.92985 \\
+$x_{\textit{fmincom  grad}} =$ & 3.00000 & -3.54854 & -3.65461 \\
+ & 2.00000 & -1.41941 & 2.73772 \\
+$\text{time}_{\textit{fmincom  grad}}\, [s] =$ & 0.03125 & 0.00000 & 0.01563 \\
+ &  &  &  \\
+$f(x)_{\textit{CasADi}} =$ & 0.00000 & 35.92985 & 35.92985 \\
+$x_{\textit{CasADi}} = $ & 3.00000 & -3.65461 & -3.65461 \\
+ & 2.00000 & 2.73772 & 2.73772 \\
+$\text{time}_{\textit{CasADi}}\, [s] =$ & 0.10938 & 0.03125 & 0.01563 \\
+\bottomrule
+\end{tabular}
+\caption{Found solution for different inital points for the Himmelblau test problem.}
+\label{table:ex4_solve_test_himmel}
+\end{table}

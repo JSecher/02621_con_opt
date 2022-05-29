@@ -1,0 +1,19 @@
+\begin{table}[!ht]
+\centering
+\begin{tabular}{rrrrr}
+\toprule
+ & $x_0=[0.0, 0.0]$ & $x_0=[1.0, 2.0]$ & $x_0=[-4.0, 0.0]$ & $x_0=[-4.0, 1.0]$ \\
+\midrule
+f(x) = & 0.00000 & 0.00000 & 72.85554 & 35.92985 \\
+$x =$ & 3.00000 & 3.00000 & -3.54854 & -3.65461 \\
+ & 2.00000 & 2.00000 & -1.41941 & 2.73772 \\
+time [s] $=$ & 0.03125 & 0.03125 & 0.01563 & 0.03125 \\
+$\text{Interations}\; =$ & 18 & 17 & 8 & 15 \\
+$\text{Function Calls}\, =$ & 152 & 150 & 50 & 106 \\
+ &  &  &  &  \\
+MSE $=$ & 5.23347e-10 & 5.63968e-08 & 2.15061e-08 & 6.06109e-09 \\
+\bottomrule
+\end{tabular}
+\caption{Comparison of found solution of SQP using Line Search and \textit{fmincon} for different initial points for the Himmelblau test problem.}
+\label{table:ex4_ls_himmel}
+\end{table}

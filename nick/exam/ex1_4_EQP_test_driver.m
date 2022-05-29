@@ -62,7 +62,7 @@ savefigpdf(f, "ex1_4_error_comp_quadprog", 1);
 %% Make Table
 
 no_ids = 5;
-solver_select = 4;
+solver_select = 2;
 select_ids = round(linspace(1, Ntests, no_ids));
 objective_true = zeros(no_ids,1);
 objective = zeros(no_ids,1);

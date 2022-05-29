@@ -43,7 +43,11 @@ y = yviewmin:1/res:yviewmax;
 v = [0:0.1:2 2:1:10 10:10:300];
 F = f(X,Y);
 [m,c]=contour(X,Y,F,v,"linewidth",2);
+<<<<<<< Updated upstream
 colormap("turbo")
+=======
+%colormap("turbo")
+>>>>>>> Stashed changes
 
 % Add constraints 
 con = [];
@@ -91,6 +95,7 @@ elseif add_con == 2
     axis equal
     con = [con3, con4, con5, con6];
 
+<<<<<<< Updated upstream
 elseif add_con == 3
     % box constraint
     xb = [-1.5; 1.5];      % Lower bound for x
@@ -125,6 +130,8 @@ elseif add_con == 3
     con1 = patch("XData", xp,"YData", p1,'FaceColor', 'red', 'FaceAlpha', 0.5, 'EdgeColor', 'k');
     
     con = [con3, con4, con5, con6,con1];
+=======
+>>>>>>> Stashed changes
 end
         
 % Turns off the legend for the contour
