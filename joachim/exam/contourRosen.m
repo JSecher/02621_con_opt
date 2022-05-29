@@ -91,6 +91,40 @@ elseif add_con == 2
     axis equal
     con = [con3, con4, con5, con6];
 
+elseif add_con == 3
+    % box constraint
+    xb = [-1.5; 1.5];      % Lower bound for x
+    yb = [0.5; 1.5];        % Upper bound for x
+    
+
+    % X con
+    con3 = patch("XData", [-absviewmax, xb(1), xb(1),-absviewmax, -absviewmax],...
+          "YData", [-absviewmax, -absviewmax, absviewmax, absviewmax, -absviewmax],...
+          'FaceColor', 'red', 'FaceAlpha', 0.5, 'EdgeColor', 'k');
+    con4 = patch("XData", [xb(2), absviewmax, absviewmax, xb(2), xb(2)],...
+          "YData", [-absviewmax, -absviewmax, absviewmax, absviewmax, -absviewmax],...
+          'FaceColor', 'red', 'FaceAlpha', 0.5, 'EdgeColor', 'k');
+
+    % Y con
+    con5 = patch("XData", [-absviewmax, -absviewmax, absviewmax, absviewmax, -absviewmax],...
+          "YData", [absviewmax, yb(2), yb(2), absviewmax, absviewmax],...
+          'FaceColor', 'red', 'FaceAlpha', 0.5, 'EdgeColor', 'k');
+    con6 = patch("XData", [-absviewmax, -absviewmax, absviewmax, absviewmax, -absviewmax],...
+            "YData", [yb(1), -absviewmax, -absviewmax, yb(1), yb(1)],...
+            'FaceColor', 'red', 'FaceAlpha', 0.5, 'EdgeColor', 'k');
+    axis equal
+    con = [con3, con4, con5, con6];
+
+        % Con 1
+    p1 = -(2*x).^2+1;
+    idx = abs(p1) >= yviewmin;
+    p1 = p1(idx);
+    xp = x(idx);
+    xp = [xp,xp(end),xp(1),xp(1)];
+    p1 = [p1,yviewmin, yviewmin, p1(1)];
+    con1 = patch("XData", xp,"YData", p1,'FaceColor', 'red', 'FaceAlpha', 0.5, 'EdgeColor', 'k');
+    
+    con = [con3, con4, con5, con6,con1];
 end
         
 % Turns off the legend for the contour
