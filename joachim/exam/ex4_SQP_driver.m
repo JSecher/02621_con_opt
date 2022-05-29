@@ -6,9 +6,9 @@ close all
 runContourPlot_44 = false;
 runSolveTest_45= false;
 runSolveTest_452= false;
-runBFGS_46 = true;
+runBFGS_46 = false;
 runBFGS_LS_47 = false;
-runBFGS_TR_47 = false;
+runBFGS_TR_47 = true;
 
 
 % Import CasADi

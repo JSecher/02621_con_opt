@@ -3,9 +3,9 @@
 clear
 close all
 
-Himmel_plots = true;
+Himmel_plots = false;
 Rosen_plots = true;
-rosen_con_case = 1;
+rosen_con_case = 2;
 
 % Import CasADi
 if isfolder('../../casadi-v3.5.5')
@@ -24,14 +24,16 @@ if Himmel_plots
 %%
 disp("Solving Himmelblaus Test problem all own solvers");
 
-x0s = [[.5; 4.0], [-4.0; 0.5]];
+x0s = [[1.0; 3.0], [-4.0; 0.0], [0.0; 0.5]];
 
+clear data
+data = []
 
 own_solvers = ["bfgs", "line", "trust"];
 
 for j=1:length(x0s)
 
-    fig = figure("Name", "Himmel - solutions for x0 ", 'Position', [100, 100, 800,800]);
+    fig = figure("Name", "Himmel - solutions for x0 ", 'Position', [100, 100, 600,600]);
     hold on
     %Create contour plot and constraints
     [cfig, conFigs] = contourHimmel(true);
@@ -43,32 +45,7 @@ for j=1:length(x0s)
 
     legs = [];
     tits = [];
-    for i=1:length(own_solvers)
-        solv = own_solvers(i);
-        fprintf("Using solver: %s\n", solv)
-       
-        
-        tstart = cputime;
-        [sol_own, obj_own, lambda, output_own] = SQPsolver(@objfungradHimmelblau, ...
-                                                    @confungradHimmelblau1, ...
-                                                    xl, xu, ...
-                                                    cl, cu, ...
-                                                    x0, solv);
-                                                               
-        time_own = cputime - tstart;
-            
-        fprintf('\t %s solution: [%.5e, %.5e], objective: %.5e, Iter: %.5e\n', solv, sol_own(1), sol_own(2), obj_own, output_own.iterations);
 
-        colors = ['r', 'g', 'y'];
-        names = ["BFGS", "Line Search", "Trust Region"];
-        col = colors(i);
-        % Add points of interest
-        traceIterations(output_own.xk, col, '-');
-        ow = plotPoint(sol_own(1),sol_own(2), "sol", col, 18);
-        legs = [legs, ow];
-        tits = [tits, names(i)];
-    end
-        
     % Solve problem using fmincon
     options = optimoptions('fmincon',... 
                            'Display','none',... 
@@ -87,14 +64,49 @@ for j=1:length(x0s)
     % Print results
     fprintf('Found solutions for x0 = [%.2f, %.2f] ::\n', x0(1), x0(2)); 
     fprintf('\t fmincon solution: [%.5e, %.5e], objective: %.5e, time: %.5e\n', sol_fmin(1), sol_fmin(2), fval, time_fmincon);
-    
-    
-    %data(j,:) = [fval, sol_fmin', time_fmincon, nan, ...
-    %             obj_cas, sol_cas', time_cas, nan, mean(sqrt((sol_fmin-sol_cas).^2))];
+    data = [fval, sol_fmin(1), sol_fmin(2), 0, time_fmincon, output.iterations, output.funcCount];
 
+    for i=1:length(own_solvers)
+        solv = own_solvers(i);
+        fprintf("Using solver: %s\n", solv)
+       
         
-    % Add points of interest
-    %fm = traceIterations([x0, sol_fmin], "r", '-');
+        tstart = cputime;
+        [sol_own, obj_own, lambda, output_own] = SQPsolver(@objfungradHimmelblau, ...
+                                                    @confungradHimmelblau1, ...
+                                                    xl, xu, ...
+                                                    cl, cu, ...
+                                                    x0, solv);
+                                                               
+        time_own = cputime - tstart;
+            
+        fprintf('\t %s solution: [%.5e, %.5e], objective: %.5e, Iter: %.5e\n', solv, sol_own(1), sol_own(2), obj_own, output_own.iterations);
+
+        colors = ["r", "g", "m"];
+        ls = ["-", "--", "-."];
+        marker = ["sol", "min", "max"];
+        sz = [20, 17, 14];
+        names = ["BFGS", "Line Search", "Trust Region"];
+        col = colors(i);
+        % Add points of interest
+        traceIterations(output_own.xk, col, ls(i));
+        ow = plotPoint(sol_own(1),sol_own(2), marker(i), col, sz(i));
+        legs = [legs, ow];
+        tits = [tits, names(i)];
+        data(i+1,:) = [obj_own, sol_fmin(1), sol_fmin(2), mean(sqrt((sol_own-sol_fmin).^2)), time_own, output_own.iterations, output_own.function_calls];
+
+    end
+        
+    fprintf("Ruslts for himmel x0 %d\,", j)
+    disp("cols:")
+    disp("'fmincon ','BFGS ','Line Search','Trust Region'")
+    disp("rows:")
+    disp("'$f(x)$', 'x_1', 'x_2', 'MSE', 'Time [s]', 'No. Iterations', 'No. function calls'")
+    disp("data:")
+    format shortE
+    disp(data)
+    format short
+    
     
     intp = plotPoint(x0(1),x0(2), "int");
     solp_fm = plotPoint(sol_fmin(1),sol_fmin(2), "sol", "b", 10);
@@ -103,7 +115,7 @@ for j=1:length(x0s)
 
     legend(legs,tits, "Location","southeast")
     hold off
-    %savefigpdf(fig, sprintf('ex4_9_solve_x0_%d_himmel', j), 4);
+    savefigpdf(fig, sprintf('ex4_9_solve_x0_%d_himmel', j), 4);
 end
 
 
@@ -124,7 +136,7 @@ switch rosen_con_case
         x0s = [[0.0; 0.0], [-0.5; 0], [-0.5; -0.5]];
     case 2
         con_type_name = "Box";
-        x0s = [[0.5; 1.0], [-1.25; 0.5], [-0.5; 1], [0.75; 0.6]];
+        x0s = [0.6; 0.6]% [[0.5; 1.3], [-0.5; 1], [0.6; 0.52]]; % [-1.25; 0.8]
     otherwise
         error("Unknown case for rosenbrock")
 end
@@ -133,62 +145,14 @@ own_solvers = ["bfgs", "line", "trust"];
 
 for j=1:length(x0s)
 
-    fig = figure("Name", sprintf("Rosenbrock - solutions for x0 %s constraints", con_type_name), 'Position', [100, 100, 800,800]);
+    fig = figure("Name", sprintf("Rosenbrock - solutions for x0 %s constraints", con_type_name), 'Position', [100, 100, 800,400]);
     hold on
     %Create contour plot and constraints
-    [cfig, conFigs] = contourRosen(rosen_con_case);
+    [cfig, conFigs] = contourRosen(rosen_con_case, [-1.6,1.6], [-0.1, 1.7]);
 
     legs = [];
     tits = [];
-    for i=1:length(own_solvers)
-        solv = own_solvers(i);
-        fprintf("Using solver: %s\n", solv)
-        switch rosen_con_case
-            case 1
-                x0 = x0s(:,j);    % Initial point
-                xl = [-1; -1];      % Lower bound for x
-                xu = [1; 1];        % Upper bound for x
-                cu = [1;100];
-                cl = [0;-100];
-                % For fmincon
-                tstart = cputime;
-                [sol_own,obj_own,~,output_own] = SQPsolver(@objfungradRosenbrock, ...
-                                                            @confungradRosenbrock,...
-                                                            xl, xu, ...
-                                                            cl, cu,...
-                                                            x0, solv);
-                                                           
-                time_own= cputime - tstart;
-            case 2
-                x0 = x0s(:,j);    % Initial point
-                xl = [-1.2; 0.5];      % Lower bound for x
-                xu = [1.2; 1.5];        % Upper bound for x
-                cl = [-100; -100];
-                cu = [100; 100];
-                % fmincon
-                tstart = cputime;
-                [sol_own,obj_own,~,output_own] = SQPsolver(@objfungradRosenbrock, ...
-                                                            @confungradRosenbrock_part2,...
-                                                            xl, xu, ...
-                                                            cl, cu,...
-                                                            x0, solv);
-                                                           
-                time_own = cputime - tstart;
-            otherwise
-                error("Unknown case for rosenbrock")
-        end
-        fprintf('\t %s solution: [%.5e, %.5e], objective: %.5e, Iter: %.5e\n', solv, sol_own(1), sol_own(2), obj_own, output_own.iterations);
 
-        colors = ['r', 'g', 'y'];
-        names = ["BFGS", "Line Search", "Trust Region"];
-        col = colors(i);
-        % Add points of interest
-        traceIterations(output_own.xk, col, '-');
-        ow = plotPoint(sol_own(1),sol_own(2), "sol", col, 18);
-        legs = [legs, ow];
-        tits = [tits, names(i)];
-    end
-        
     % Solve problem using fmincon
     options = optimoptions('fmincon',... 
                            'Display','none',... 
@@ -233,12 +197,71 @@ for j=1:length(x0s)
     fprintf('\t fmincon solution: [%.5e, %.5e], objective: %.5e, time: %.5e\n', sol_fmin(1), sol_fmin(2), fval, time_fmincon);
     
     
-    %data(j,:) = [fval, sol_fmin', time_fmincon, nan, ...
-    %             obj_cas, sol_cas', time_cas, nan, mean(sqrt((sol_fmin-sol_cas).^2))];
+    data = [fval, sol_fmin(1), sol_fmin(2), 0, time_fmincon, output.iterations, output.funcCount];
 
+    for i=1:1%length(own_solvers)
+        solv = own_solvers(i);
+        fprintf("Using solver: %s\n", solv)
+        switch rosen_con_case
+            case 1
+                x0 = x0s(:,j);    % Initial point
+                xl = [-1; -1];      % Lower bound for x
+                xu = [1; 1];        % Upper bound for x
+                cu = [1;100];
+                cl = [0;-100];
+                % For fmincon
+                tstart = cputime;
+                [sol_own,obj_own,~,output_own] = SQPsolver(@objfungradRosenbrock, ...
+                                                            @confungradRosenbrock,...
+                                                            xl, xu, ...
+                                                            cl, cu,...
+                                                            x0, solv);
+                                                           
+                time_own= cputime - tstart;
+            case 2
+                x0 = x0s(:,j);    % Initial point
+                xl = [-1.2; 0.5];      % Lower bound for x
+                xu = [1.2; 1.5];        % Upper bound for x
+                cl = [-100; -100];
+                cu = [100; 100];
+                % fmincon
+                tstart = cputime;
+                [sol_own,obj_own,~,output_own] = SQPsolver(@objfungradRosenbrock, ...
+                                                            @confungradRosenbrock_part2,...
+                                                            xl, xu, ...
+                                                            cl, cu,...
+                                                            x0, solv);
+                                                           
+                time_own = cputime - tstart;
+            otherwise
+                error("Unknown case for rosenbrock")
+        end
+        fprintf('\t %s solution: [%.5e, %.5e], objective: %.5e, Iter: %.5e\n', solv, sol_own(1), sol_own(2), obj_own, output_own.iterations);
+
+        colors = ["r", "g", "m"];
+        names = ["BFGS", "Line Search", "Trust Region"];
+        type = ["sol", "min", "max"];
+        ls = ["-", "--", "-."];
+        sz = [20, 17, 14];
+        col = colors(i);
+        % Add points of interest
+        traceIterations(output_own.xk, col, ls(i));
+        ow = plotPoint(sol_own(1),sol_own(2), type(i), col, sz(i));
+        legs = [legs, ow];
+        tits = [tits, names(i)];
+        data(i+1,:) = [obj_own, sol_fmin(1), sol_fmin(2), mean(sqrt((sol_own-sol_fmin).^2)), time_own, output_own.iterations, output_own.function_calls];
+    end
         
-    % Add points of interest
-    %fm = traceIterations([x0, sol_fmin], "r", '-');
+    fprintf("Ruslts for himmel x0 %d\,", j)
+    disp("cols:")
+    disp("'fmincon ','BFGS ','Line Search','Trust Region'")
+    disp("rows:")
+    disp("'$f(x)$', 'x_1', 'x_2', 'MSE', 'Time [s]', 'No. Iterations', 'No. function calls'")
+    disp("data:")
+    format shortE
+    disp(data)
+    format short
+    
     
     intp = plotPoint(x0(1),x0(2), "int");
     solp_fm = plotPoint(sol_fmin(1),sol_fmin(2), "sol", "b", 10);
@@ -247,7 +270,7 @@ for j=1:length(x0s)
 
     legend(legs,tits, "Location","southwest")
     hold off
-    savefigpdf(fig, sprintf('ex4_9_solve_x0_%d_test_rosen_%s', j, lower(con_type_name)), 4);
+    %savefigpdf(fig, sprintf('ex4_9_solve_x0_%d_test_rosen_%s', j, lower(con_type_name)), 4);
 end
 
 
