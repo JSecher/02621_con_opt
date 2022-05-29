@@ -9,10 +9,10 @@ close all
 seed = 42;
 Ntests = 20;
 min_param = 100;
-max_param = 3000; % 1000
+max_param = 2000; % 1000
 
-run_param_dependent = false;
-run_con_dependent = false;
+run_param_dependent = true;
+run_con_dependent = true;
 run_recycle = true;
 
 %% Run basic tests for all solvers
