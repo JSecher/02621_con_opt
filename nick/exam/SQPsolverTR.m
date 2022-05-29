@@ -127,17 +127,7 @@ while (output.iterations < maxiter) && ~output.converged
     gamma = min(max( (2*rho-1)^3 + 1, 0.25), 2);
     
     output.function_calls = output.function_calls + 3;
-<<<<<<< Updated upstream
     
-=======
-    if any(~isfinite(Deltax))
-        disp("Detla x is fucked")
-    end
-    if ~isfinite(rho)
-        disp("rho is fucked")
-    end
-    fprintf("Before: Deltax = [%.6f,%.6f],  rho : %f , mu = %f, tr = %f, gamma = %f, x = [%.5f, %.5f], dl2 = %f\n",Deltax(1), Deltax(2), rho, mu_val, tr, gamma, x(1), x(2),norm(dL2, 'inf'));
->>>>>>> Stashed changes
     % Adjust trust region accordingly
     if rho > 0    
         % If accepted
@@ -184,10 +174,6 @@ while (output.iterations < maxiter) && ~output.converged
         % Update trust region
         tr = gamma*norm(Deltax,"inf");
     end
-<<<<<<< Updated upstream
-=======
-    %fprintf("After: Deltax = [%.6f,%.6f],  rho : %f , mu = %f, tr = %f, gamma = %f, x = [%.5f, %.5f], dl2 = %f\n",Deltax(1), Deltax(2), rho, mu_val, tr, gamma, x(1), x(2),norm(dL2, 'inf'));
->>>>>>> Stashed changes
     
     % Check for convergence
     if norm(dL2, 'inf') < epsilon

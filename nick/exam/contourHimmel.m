@@ -29,7 +29,7 @@ y = -view:1/res:view;
 v = [0:2:10 10:10:100 100:20:300];
 F = f(X,Y);
 [m,c]=contour(X,Y,F,v,"linewidth",2);
-%colormap("turbo")
+colormap("turbo")
 
 % Add constraints 
 con = [];
